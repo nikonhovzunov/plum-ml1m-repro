@@ -1,0 +1,17 @@
+# Data (do not track raw and processed datasets)
+data/raw/
+data/processed/
+
+# Experiment outputs
+runs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
