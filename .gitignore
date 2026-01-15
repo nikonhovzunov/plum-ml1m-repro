@@ -7,6 +7,8 @@ runs/
 
 # Jupyter
 .ipynb_checkpoints/
+draft.ipynb
+
 
 # Python cache
 __pycache__/
