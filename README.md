@@ -3,7 +3,7 @@
 This repository is a step-by-step reproduction project for a PLUM-style generative recommendation pipeline on MovieLens-1M.
 
 **Current milestone:** a working baseline **RQ-VAE** that discretizes item features into multi-level **Semantic IDs (SIDs)**, with full run logging (configs, metrics, checkpoints).  
-**Next:** progressive masking + co-occurrence (contrastive) loss, then GPT-2 style generative retrieval.
+**Next:** progressive masking + co-occurrence (contrastive) loss, then GPT-2 generative retrieval.
 
 ---
 
@@ -64,11 +64,12 @@ Processed artifacts will be created under:
 
 Each training run creates a new folder:
 
+```text
 runs/<timestamp>_<variant>/
-config.json
-metrics.json
-checkpoint_last.pt
-checkpoint_best.pt
+  config.json
+  metrics.json
+  checkpoint_last.pt
+  checkpoint_best.pt
 
 - `config.json` — model/data hyperparameters for the run
 - `metrics.json` — per-epoch metrics:
@@ -113,7 +114,7 @@ Naming convention examples:
    Use `data/processed/sid_pairs/*` to enforce that neighboring items in user sequences have compatible representations/codes.
 
 3. **Generative retrieval (planned)**  
-   Train a GPT-2 style model to generate item SIDs from user context.
+   Train a GPT-2 model to generate item SIDs from user context.
 
 ---
 
