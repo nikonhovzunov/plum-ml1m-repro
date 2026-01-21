@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+./src/__init__.py
+./src/rqvae.py
+plum_ml1m_repro.egg-info/PKG-INFO
+plum_ml1m_repro.egg-info/SOURCES.txt
+plum_ml1m_repro.egg-info/dependency_links.txt
+plum_ml1m_repro.egg-info/top_level.txt
