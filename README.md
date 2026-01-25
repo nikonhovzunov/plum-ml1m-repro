@@ -88,31 +88,7 @@ or ensure the project root is on `PYTHONPATH`. See “Imports / package setup”
 
 ---
 
-## Experiment logging (`runs/`)
 
-Each training run creates a new folder:
-
-```text
-runs/<timestamp>_<variant>/
-  config.json
-  metrics.json
-  checkpoint_last.pt
-  checkpoint_best.pt
-```
-
-- `config.json` — model/data hyperparameters for the run
-- `metrics.json` — per-epoch metrics:
-  - losses: `total`, `recon`, `codebook`, `commit` (+ optional `con`) (train/val)
-  - codebook usage: `U` and `PPL` per level (train/val)
-- `checkpoint_last.pt` — last epoch checkpoint (model + optimizer)
-- `checkpoint_best.pt` — best checkpoint by `val_loss` (default criterion)
-
-Naming convention examples:
-- `*_baseline_rqvae_title_year_genres`
-- `*_rqvae_*_PROGRESSIVE_MASKING`
-- `*_rqvae_*_PROGRESSIVE_MASKING_ContrastiveRegularization`
-
----
 
 ## Repro steps (quick)
 
