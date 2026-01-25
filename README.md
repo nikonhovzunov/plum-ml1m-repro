@@ -67,7 +67,7 @@ Processed artifacts will be created under:
   - compute **SID uniqueness** on full item set and per-batch
   - load `checkpoint_best.pt` vs `checkpoint_last.pt` and evaluate under consistent criteria
 
-- `05_compare_runs.ipynb` *(added)*  
+- `05_compare_runs.ipynb` 
   Side-by-side comparison of saved runs (configs + metrics + final evaluation table).
 
 ---
