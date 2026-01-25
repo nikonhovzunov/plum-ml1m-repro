@@ -129,8 +129,6 @@ Naming convention examples:
 ### U (unique SIDs per level)
 How many different codes are used at each level (per epoch, based on training/val batches).
 
-Higher **U** often means better utilization (less collapse), but it can also increase while reconstruction worsens.
-
 ### U% (unique SIDs per batch)
 A normalized version of U:
 
@@ -158,25 +156,6 @@ Pairs are generated in `02_sid_pairs.ipynb` and consumed during training in `03_
 
 ---
 
-## Objective comparison of runs (important)
-
-By default `checkpoint_best.pt` is chosen by **minimum val_loss**.
-However, some variants may:
-- temporarily achieve low val_loss with **collapsed** code usage,
-- later expand the discrete space (higher U/PPL, better SID diversity) with slightly worse loss.
-
-Recommended evaluation protocol:
-1. Evaluate the same checkpoint types for every run (e.g., `best` and `last`).
-2. Report:
-   - full-dataset loss components (recon / codebook / commit / con)
-   - full-dataset SID uniqueness: `len(unique(SIDs))/N_items`
-   - average per-batch U% across a fixed DataLoader
-3. Pick the “best” checkpoint by a composite criterion, e.g.:
-   - primary: SID diversity (Uniqueness, U%, PPL)
-   - constraint: recon loss not worse than X%
-   - tie-breaker: total val_loss
-
----
 
 ## Imports / package setup (Windows + Conda + Jupyter)
 
@@ -195,23 +174,7 @@ sys.path.append(str(Path("..").resolve()))
 **Option C:** install the repo in editable mode (`pip install -e .`) in the same environment
 that Jupyter is using.
 
----
 
-## Roadmap / Next steps
-
-1. **Finalize evaluation tables**
-   - compute loss components on full item set for multiple checkpoints
-   - aggregate SID diversity metrics into a single comparison DataFrame
-
-2. **Tune contrastive regularization**
-   - temperature / normalization
-   - contrastive weight `lambda_con`
-   - stability checks (avoid NaNs, scaling issues)
-
-3. **Generative retrieval (planned)**
-   Train GPT-2 to generate item SIDs from user context.
-
----
 
 ## Notes
 
