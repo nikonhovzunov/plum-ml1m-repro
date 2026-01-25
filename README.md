@@ -7,7 +7,6 @@ This repository is a step-by-step reproduction project for a PLUM-style generati
 - **Co-occurrence contrastive regularization** (uses user behavior pairs to shape the embedding space)
 - Full run logging (**configs, metrics, checkpoints**) and comparison utilities
 
-**Next:** finalize robust evaluation + pick best checkpoints by target metric, then GPT-2 generative retrieval.
 
 ---
 
