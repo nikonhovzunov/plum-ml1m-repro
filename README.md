@@ -46,7 +46,7 @@ Processed artifacts will be created under:
   Build item features:
   - title: TF-IDF → TruncatedSVD (dense embedding)
   - year: normalization / scaling
-  - genres: multi-hot encoding (recommended; improves codebook utilization)
+  - genres: multi-hot encoding
 
 - `02_sid_pairs.ipynb`  
   Build co-occurrence **neighbor pairs** from train sequences (i_t → i_{t+1}).  
@@ -82,43 +82,6 @@ Reusable implementation lives in:
     - recon loss + codebook + commitment
     - co-occurrence contrastive regularization `L_con`
 
-> If importing from notebooks fails (`No module named 'src'`), run notebooks from repository root
-or ensure the project root is on `PYTHONPATH`. See “Imports / package setup” below.
-
----
-
-
-
-## Repro steps (quick)
-
-1. Download MovieLens-1M and place files into `data/raw/ml-1m/`.
-2. Run notebooks in order:  
-   `00_sanity` → `01_item_features` → `02_sid_pairs` → `03_rqvae_model`
-3. Compare runs and evaluate SIDs in:  
-   `04_eval_runs` / `05_compare_runs`
-
----
-
-## Interpreting SID metrics
-
-### U (unique SIDs per level)
-How many different codes are used at each level (per epoch, based on training/val batches).
-
-### U% (unique SIDs per batch)
-A normalized version of U:
-
-\[
-U\_\%(e,l)=\frac{U(e,l)}{B}\cdot 100
-\]
-
-Where `B` is batch size (e.g., 512).
-
-Useful for fair comparison across different batch sizes or splits.
-
-### PPL (perplexity per level)
-“Effective number of codes” used at that level.  
-PPL grows when the distribution of selected codes becomes more diverse.
-
 ---
 
 ## Co-occurrence contrastive regularization (L_con)
@@ -130,25 +93,6 @@ have more compatible representations.
 Pairs are generated in `02_sid_pairs.ipynb` and consumed during training in `03_rqvae_model.ipynb`.
 
 ---
-
-
-## Imports / package setup (Windows + Conda + Jupyter)
-
-If you want `from src.rqvae import RQVAE, RQVAELoss` to work from any notebook:
-
-**Option A (simple):** run notebooks from repo root (so root is in `sys.path`).
-
-**Option B:** add root to `sys.path` at the top of the notebook:
-
-```python
-import sys
-from pathlib import Path
-sys.path.append(str(Path("..").resolve()))
-```
-
-**Option C:** install the repo in editable mode (`pip install -e .`) in the same environment
-that Jupyter is using.
-
 
 
 ## Notes
