@@ -29,7 +29,6 @@ class MultiResolutionCodebooks(nn.Module):
     def __init__(self, h_d: int, n_levels: int):
         super().__init__()
         self.h_d = h_d
-        self.Naive_Masking = False
         self.Progressive_Masking = False
         self.epoch_devider = 100
         self.current_epoch = 0
@@ -37,9 +36,6 @@ class MultiResolutionCodebooks(nn.Module):
         self.codebooks = nn.ModuleList([
             nn.Embedding(2048 // (2 ** level), self.h_d) for level in range(self.n_levels)
         ])
-
-    def set_naive_masking(self, on: bool):
-        self.Naive_Masking = on
 
     def set_progressive_masking(self, on: bool, current_epoch, epoch_devider: int):
         self.current_epoch = current_epoch
@@ -66,11 +62,8 @@ class MultiResolutionCodebooks(nn.Module):
             q_list[i] = q
 
         z_q_sum_arr = torch.stack(z_q_sum_arr, dim=1)
-        if self.Naive_Masking:
-            r = torch.randint(1, self.n_levels + 1, (1,)).item()
-            z_q = z_q_sum_arr[:, :r, :].sum(dim=1)
-            
-        elif self.Progressive_Masking:
+        
+        if self.Progressive_Masking:
             r_max = min(self.n_levels, self.current_epoch // self.epoch_devider + 1)
             r = torch.randint(1, r_max + 1, (1,)).item()
             z_q = z_q_sum_arr[:, :r, :].sum(dim=1)
@@ -101,9 +94,6 @@ class RQVAE(nn.Module):
         x_hat = self.decoder(z_q_st)
         
         return x_hat, h, z_q, SIDs, r_list, q_list 
-
-    def set_naive_masking(self, on: bool):
-        self.codebooks.set_naive_masking(on)
 
     def set_progressive_masking(self, on: bool, current_epoch, epoch_devider: int):
         self.codebooks.set_progressive_masking(on, current_epoch, epoch_devider)
@@ -143,7 +133,5 @@ class RQVAELoss(nn.Module):
             con_loss = self.co_occurence_contrastive_regularization(p, p_pos)
         else:
             con_loss = torch.tensor(0.0, device=x.device)
-
-        total += con_loss
             
         return total, recon_loss, codebook_loss, commit_loss, con_loss
