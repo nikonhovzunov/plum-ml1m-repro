@@ -372,11 +372,3 @@ python -m pip install -r requirements-lock.txt
 ```
 
 Use the same Python environment for terminal commands and the Jupyter kernel. `requirements-lock.txt` is the current local dependency snapshot.
-
-## Known Limitations
-
-- The best Qwen result is validation-only. The test split is intentionally not used yet.
-- Current SFT uses a single history window (`12`). Longer windows (`16`, `24`, or mixed windows) are a natural next experiment.
-- Full validation with beam search is slow because it performs autoregressive generation over thousands of users.
-- The current comparison to public sequential recommendation baselines is approximate until local baselines are reproduced under the same split and full-catalog evaluation protocol.
-- Local reports and exported research tables are intentionally ignored by git.
