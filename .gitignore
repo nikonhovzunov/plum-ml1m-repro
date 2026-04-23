@@ -4,16 +4,27 @@ data/processed/
 
 # Experiment outputs
 runs/
+notebooks/catboost_info/
+wandb/
+mlruns/
+lightning_logs/
+
+# Local research reports
+reports/*.md
+reports/**/*.md
+!reports/**/README.md
 
 # Jupyter
 .ipynb_checkpoints/
 draft*
-
-
+*.nbconvert.ipynb
 
 # Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.egg-info/
 
 # OS files
 .DS_Store

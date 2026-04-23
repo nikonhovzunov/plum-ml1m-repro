@@ -1,0 +1,24 @@
+{
+  "notebook": "notebooks\\07_experiments_report.ipynb",
+  "figures_dir": "reports\\figures\\experiments_report_2026-04-21",
+  "dataset_facts": {
+    "train_rows": 988129,
+    "val_rows": 6040,
+    "test_rows": 6040,
+    "users": 6040,
+    "items": 3706,
+    "unique_sids": 3519,
+    "sid_uniqueness": 0.9495412844036697,
+    "sid_collision_buckets": 98,
+    "sid_collided_items": 285,
+    "sid_collision_excess": 187,
+    "history_len_median": 94.0,
+    "history_len_mean": 163.5975165562914,
+    "history_len_p90": 398.0,
+    "history_len_max": 2312
+  },
+  "rqvae_runs": 13,
+  "cpt_checkpoints": 18,
+  "sft_metric_rows": 8,
+  "created_at": "2026-04-21T18:18:30"
+}

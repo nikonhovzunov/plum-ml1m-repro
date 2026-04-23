@@ -1,0 +1,73 @@
+{
+  "run_name": "sft_gpt2_s_weak_cpt_3epochs",
+  "protocol": "full-user leave-one-out SFT; one train target per user",
+  "model_family": "GPT-2 S/base",
+  "cpt_checkpoint": "C:\\Users\\User\\plum-ml1m-repro\\data\\processed\\artifacts\\CPT_user_behavior_V1\\cpt_gpt2_v1\\checkpoint-1400",
+  "output_dir": "C:\\Users\\User\\plum-ml1m-repro\\data\\processed\\artifacts\\SFT\\sft_gpt2_s_weak_cpt_3epochs",
+  "sid_path": "C:\\Users\\User\\plum-ml1m-repro\\data\\processed\\SIDs_V1.npy",
+  "sid_shape": [
+    3706,
+    5
+  ],
+  "train_examples": 6040,
+  "val_examples": 6040,
+  "test_examples": 6040,
+  "num_epochs": 3,
+  "num_beams": 20,
+  "top_k": 20,
+  "max_history_events": 100,
+  "max_length": 512,
+  "build_seconds": 35.30941104888916,
+  "train_seconds": 342.7400104999542,
+  "train_metrics": {
+    "train_runtime": 341.3382,
+    "train_samples_per_second": 53.085,
+    "train_steps_per_second": 3.322,
+    "train_loss": 2.4654419106781167,
+    "epoch": 3.0
+  },
+  "sid_mapping": {
+    "uniqueness": 0.9495412844036697,
+    "collision_buckets": 98,
+    "collided_items_in_collision_buckets": 285,
+    "collision_excess": 187
+  },
+  "val_metrics": {
+    "n": 6040.0,
+    "recall@1": 0.004304635761589404,
+    "ndcg@1": 0.004304635761589404,
+    "mrr@1": 0.004304635761589404,
+    "recall@5": 0.017549668874172187,
+    "ndcg@5": 0.011082233561241984,
+    "mrr@5": 0.008954194260485658,
+    "recall@10": 0.02533112582781457,
+    "ndcg@10": 0.01358516118915695,
+    "mrr@10": 0.009979041837485556,
+    "recall@20": 0.033443708609271525,
+    "ndcg@20": 0.015633005326550584,
+    "mrr@20": 0.010539195402746972,
+    "invalid_sid_rate": 0.0,
+    "duplicate_rate": 0.0,
+    "item_coverage": 182.0,
+    "decode_seconds": 1493.385001897812
+  },
+  "test_metrics": {
+    "n": 6040.0,
+    "recall@1": 0.004635761589403974,
+    "ndcg@1": 0.004635761589403974,
+    "mrr@1": 0.004635761589403974,
+    "recall@5": 0.015066225165562913,
+    "ndcg@5": 0.009764771913701101,
+    "mrr@5": 0.008035320088300223,
+    "recall@10": 0.021688741721854303,
+    "ndcg@10": 0.01193432179580247,
+    "mrr@10": 0.008946638810049415,
+    "recall@20": 0.028145695364238412,
+    "ndcg@20": 0.013560453144034054,
+    "mrr@20": 0.00938914884789781,
+    "invalid_sid_rate": 0.0,
+    "duplicate_rate": 0.0,
+    "item_coverage": 185.0,
+    "decode_seconds": 1541.4309799671173
+  }
+}

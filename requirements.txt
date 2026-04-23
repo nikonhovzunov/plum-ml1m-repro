@@ -1,5 +1,26 @@
+# Core data stack
 numpy
 pandas
 pyarrow
 tqdm
+
+# Modeling
 torch
+scikit-learn
+
+# Experiment analysis / notebooks
+matplotlib
+seaborn
+catboost
+iterative-stratification
+
+# PLUM-style CPT / SFT
+transformers
+datasets
+accelerate
+safetensors
+sentence-transformers
+
+# Jupyter ergonomics
+ipykernel
+ipywidgets

@@ -1,0 +1,28 @@
+{
+  "run_name": "cpt_qwen2_5_3b_base_sid_v2_plum_curriculum_v1",
+  "model_dir": "C:\\Users\\User\\plum-ml1m-repro\\data\\processed\\artifacts\\cpt_qwen2_5_3b_base_sid_v2_plum_curriculum_v1\\final_merged",
+  "meta_eval": {
+    "n": 300,
+    "title_accuracy": 0.7166666666666667,
+    "year_accuracy": 0.7366666666666667,
+    "genres_accuracy": 0.8166666666666667,
+    "all_exact_accuracy": 0.71,
+    "errors": 87
+  },
+  "description_eval": {
+    "n": 120,
+    "sid_only_f1_mean": 0.03153446230310105,
+    "sid_only_f1_median": 0.0,
+    "sid_title_f1_mean": 0.08484398788183928,
+    "sid_title_f1_median": 0.059714795008912656,
+    "title_year_f1_mean": 0.08792363439239673,
+    "title_year_f1_median": 0.06612021857923497,
+    "sid_title_beats_sid_only_rate": 0.6583333333333333,
+    "title_year_beats_sid_only_rate": 0.6666666666666666
+  },
+  "outputs": {
+    "metadata_csv": "C:\\Users\\User\\plum-ml1m-repro\\reports\\cpt_grounding\\qwen2_5_3b_sid_v2\\sid_to_metadata_eval.csv",
+    "description_csv": "C:\\Users\\User\\plum-ml1m-repro\\reports\\cpt_grounding\\qwen2_5_3b_sid_v2\\description_recovery_eval.csv",
+    "summary_json": "C:\\Users\\User\\plum-ml1m-repro\\reports\\cpt_grounding\\qwen2_5_3b_sid_v2\\summary.json"
+  }
+}
