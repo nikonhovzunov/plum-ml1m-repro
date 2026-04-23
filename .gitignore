@@ -4,15 +4,14 @@ data/processed/
 
 # Experiment outputs
 runs/
+reports/
+research/movie_overviews/data/
+research/movie_overviews/cache/*
+!research/movie_overviews/cache/.gitignore
 notebooks/catboost_info/
 wandb/
 mlruns/
 lightning_logs/
-
-# Local research reports
-reports/*.md
-reports/**/*.md
-!reports/**/README.md
 
 # Jupyter
 .ipynb_checkpoints/
