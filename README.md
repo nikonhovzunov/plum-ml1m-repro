@@ -28,7 +28,7 @@ Validation trajectory used for protocol selection:
 | Series | Model / setup | Scope | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 | Status |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | SID-v1 first retrieval attempt | GPT-2 S weak-CPT SFT, no descriptions | val 6040 | - | - | 0.0253 | - | - | - | discarded |
-| SID-v2 baseline | GPT2-S SFT | val 6040 | 0.0336 | 0.1075 | 0.1462 | 0.0836 | 0.0643 | 1185 | working baseline |
+| SID-v2 baseline | GPT2-S CPT + SFT | val 6040 | 0.0336 | 0.1075 | 0.1462 | 0.0836 | 0.0643 | 1185 | working baseline |
 | SID-v2 Qwen w12 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 12 | val 6040 | 0.0598 | 0.1657 | 0.2318 | 0.1348 | 0.1051 | 1924 | strong validation run |
 | SID-v2 Qwen w12/10/8 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, mixed windows | val 6040 | 0.0512 | 0.1455 | 0.2194 | 0.1222 | 0.0928 | 2076 | below w12 |
 | SID-v2 Qwen w16 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 16 | val 6040 | 0.0579 | 0.1623 | 0.2397 | 0.1358 | 0.1042 | 1940 | selected protocol |
@@ -240,7 +240,7 @@ Sanity checks performed on the current split:
 ### SFT
 
 - `notebooks/sft/03_sft_gpt2_small_sid_v2_next_watch_plum.ipynb`
-  GPT2-S SFT baseline on SID-v2.
+  GPT2-S CPT + SFT baseline on SID-v2.
 
 - `notebooks/sft/04_sft_qwen2_5_3b_sid_v2_next_watch_w12.ipynb`
   Qwen2.5-3B SFT-LoRA validation run on top of the merged CPT checkpoint, with history window `12` and trie-constrained SID decoding.
