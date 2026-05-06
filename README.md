@@ -19,28 +19,30 @@ The first SID series performed poorly on retrieval (`Recall@10 = 0.0253` on full
 - item embeddings were rebuilt with `Qwen/Qwen3-Embedding-4B` embeddings (`2560d`);
 - RQ-VAE was upgraded from a small prototype to an approximately `7.3M` parameter model;
 - `Qwen/Qwen2.5-3B` was continued-pretrained with LoRA on SID metadata and train-only behavior, then saved as a merged CPT checkpoint;
-- a separate Qwen2.5-3B SFT-LoRA adapter was trained on top of the merged CPT checkpoint and evaluated on the full validation split.
+- separate Qwen2.5-3B SFT-LoRA adapters were trained on top of the merged CPT checkpoint;
+- the best validation protocol used a fixed history window of `16`;
+- the final selected protocol was trained on `train + val` for one epoch and evaluated once on the held-out test split.
 
-Validation trajectory:
+Validation trajectory used for protocol selection:
 
-| Series | SID source | Model / setup | Validation scope | Recall@10 | Status |
-|---|---|---|---:|---:|---|
-| SID-v1 first retrieval attempt | engineered title/year/genre features, no descriptions | GPT-2 S weak-CPT SFT | 6040 users | 0.0253 | failed retrieval series |
-| SID-v2 baseline | `Qwen/Qwen3-Embedding-4B` item embeddings + descriptions | GPT2-S SFT | 6040 users | 0.1462 | working baseline |
-| SID-v2 current best | `Qwen/Qwen3-Embedding-4B` item embeddings + descriptions | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA | 6040 users | 0.2318 | current best validation run |
+| Series | Model / setup | Scope | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 | Status |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| SID-v1 first retrieval attempt | GPT-2 S weak-CPT SFT, no descriptions | val 6040 | - | - | 0.0253 | - | - | - | discarded |
+| SID-v2 baseline | GPT2-S SFT | val 6040 | 0.0336 | 0.1075 | 0.1462 | 0.0836 | 0.0643 | 1185 | working baseline |
+| SID-v2 Qwen w12 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 12 | val 6040 | 0.0598 | 0.1657 | 0.2318 | 0.1348 | 0.1051 | 1924 | strong validation run |
+| SID-v2 Qwen w12/10/8 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, mixed windows | val 6040 | 0.0512 | 0.1455 | 0.2194 | 0.1222 | 0.0928 | 2076 | below w12 |
+| SID-v2 Qwen w16 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 16 | val 6040 | 0.0579 | 0.1623 | 0.2397 | 0.1358 | 0.1042 | 1940 | selected protocol |
 
-Detailed current validation result:
+Train+val -> test runs:
 
-| Model / setup | Validation users | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| GPT2-S + SID-v2 SFT | 6040 | 0.0336 | 0.1075 | 0.1462 | 0.0836 | 0.0643 | 1185 |
-| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2 | 6040 | 0.0598 | 0.1657 | 0.2318 | 0.1348 | 0.1051 | 1924 |
+| Protocol | Train split | Test users | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 | Status |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 12, 3 epochs | train + val | 6040 | 0.0551 | 0.1507 | 0.2247 | 0.1280 | 0.0986 | 1917 | earlier test reference |
+| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 1 epoch | train + val | 6040 | 0.0553 | 0.1576 | 0.2318 | 0.1312 | 0.1006 | 1929 | selected final protocol |
 
-The Qwen2.5-3B CPT-LoRA plus SFT-LoRA run improves full-validation `Recall@10` by roughly `+0.086` absolute and about `+58%` relative over the GPT2-S SID-v2 run.
+For scale, the final Qwen2.5-3B CPT-LoRA plus SFT-LoRA test run is roughly `+0.086` absolute Recall@10 above the earlier GPT2-S SID-v2 full-validation reference. Direct model comparisons should still use the same split and protocol. The final test result is the held-out estimate for the frozen `w16 / 1 epoch` protocol, not another tuning signal.
 
 `Invalid SID rate` is omitted from the comparison table because all compared runs use trie-constrained decoding over valid item SID sequences, so invalid generations are ruled out by construction.
-
-Important interpretation note: the current result is on the **validation split**, not the final test split. The test split should be used only once after the protocol and hyperparameters are frozen.
 
 The SID-v1 value comes from the archived full-validation GPT-2 S weak-CPT run and is included only to document why the first SID series was abandoned.
 
@@ -129,7 +131,8 @@ Main properties:
 | Decoders | separate reconstruction heads for metadata and description |
 | Behavior signal | train-only weighted co-occurrence contrastive loss |
 | Best SID uniqueness | `3695 / 3706 = 0.9970` |
-| Best downstream validation | `Recall@10 = 0.2318` with Qwen2.5-3B CPT-LoRA plus separate SFT-LoRA |
+| Best downstream validation | `Recall@10 = 0.2397` with Qwen2.5-3B CPT-LoRA plus separate SFT-LoRA |
+| Final downstream test | `Recall@10 = 0.2318` after training the selected `w16 / 1 epoch` protocol on `train + val` |
 
 ## Project Structure
 
@@ -146,6 +149,8 @@ Main properties:
 |-- scripts/
 |   |-- run_qwen4b_rqvae_sid_v2.py
 |   |-- run_advanced_rqvae_sid_v2.py
+|   |-- eval_qwen_sft_window.py
+|   |-- run_notebook_nbclient.py
 |   `-- reporting/
 |-- notebooks/
 |   |-- data_prep/       # raw MovieLens checks, reindexing, splits, old item features
@@ -198,7 +203,8 @@ Sanity checks performed on the current split:
 - `train` and `val` intersection by `(user_id, item_idx)`: `0`;
 - `train` and `test` intersection by `(user_id, item_idx)`: `0`;
 - `val` and `test` intersection by `(user_id, item_idx)`: `0`;
-- validation target inside the last-12 train prompt: `0`;
+- validation target inside the train prompt window: `0`;
+- test target inside the `train + val` prompt window: `0`;
 
 ## Main Notebooks
 
@@ -237,7 +243,19 @@ Sanity checks performed on the current split:
   GPT2-S SFT baseline on SID-v2.
 
 - `notebooks/sft/04_sft_qwen2_5_3b_sid_v2_next_watch_w12.ipynb`
-  Current Qwen2.5-3B SFT-LoRA run on top of the merged CPT checkpoint, with history window `12` and trie-constrained SID decoding.
+  Qwen2.5-3B SFT-LoRA validation run on top of the merged CPT checkpoint, with history window `12` and trie-constrained SID decoding.
+
+- `notebooks/sft/05_sft_qwen2_5_3b_sid_v2_trainval_test_w12_3ep.ipynb`
+  Earlier train+val -> test run with history window `12` and three SFT epochs.
+
+- `notebooks/sft/06_sft_qwen2_5_3b_sid_v2_next_watch_w12_10_8_pat2.ipynb`
+  Validation run with mixed history windows `12 / 10 / 8` and early stopping.
+
+- `notebooks/sft/07_sft_qwen2_5_3b_sid_v2_next_watch_w16_pat2.ipynb`
+  Validation run with fixed history window `16`; this run selected the final protocol.
+
+- `notebooks/sft/08_sft_qwen2_5_3b_sid_v2_trainval_test_w16_1ep.ipynb`
+  Final train+val run for the selected `w16 / 1 epoch` protocol and one full test evaluation.
 
 ## Current Artifacts
 
@@ -250,8 +268,10 @@ These paths are local and ignored by git:
 | RQ-VAE SID-v2 | `runs/qwen4b_rqvae_sid_v2_plum/SIDs_best.npy` |
 | Qwen CPT LoRA adapter | `data/processed/artifacts/cpt_qwen2_5_3b_base_sid_v2_plum_curriculum_v1/adapter` |
 | Qwen CPT merged checkpoint | `data/processed/artifacts/cpt_qwen2_5_3b_base_sid_v2_plum_curriculum_v1/final_merged` |
-| Qwen SFT best adapter | `data/processed/artifacts/sft_qwen2_5_3b_sid_v2_next_watch_w12_v1/best_adapter` |
-| Qwen SFT full-val metrics | `data/processed/artifacts/sft_qwen2_5_3b_sid_v2_next_watch_w12_v1/full_val_metrics.json` |
+| Qwen SFT selected validation adapter | `data/processed/artifacts/sft_qwen2_5_3b_sid_v2_next_watch_w16_pat2_v1/best_adapter` |
+| Qwen SFT selected validation metrics | `data/processed/artifacts/sft_qwen2_5_3b_sid_v2_next_watch_w16_pat2_v1/full_val_metrics.json` |
+| Qwen SFT final train+val adapter | `data/processed/artifacts/sft_qwen2_5_3b_sid_v2_trainval_test_w16_1ep_v1/final_adapter` |
+| Qwen SFT final test metrics | `data/processed/artifacts/sft_qwen2_5_3b_sid_v2_trainval_test_w16_1ep_v1/final_test_metrics.json` |
 
 ## SID-v2 Summary
 
@@ -310,23 +330,38 @@ Active Qwen SFT setup:
 - adaptation: separate SFT LoRA adapter;
 - LoRA rank: `16`;
 - LoRA alpha/dropout: `32` / `0.05`;
-- history window: `12`;
+- selected history window: `16`;
 - target: next item SID only;
 - decoding: trie-constrained beam search over valid item SIDs;
 - filtering: already-seen items are filtered from candidates;
-- validation: full `6040` validation users.
+- protocol selection: full `6040` validation users;
+- final evaluation: full `6040` test users after training on `train + val`.
 
 Best observed full-validation result:
 
 ```json
 {
-  "recall@1": 0.0597682119205298,
-  "recall@5": 0.16572847682119204,
+  "recall@1": 0.057947019867549666,
+  "recall@5": 0.16225165562913907,
+  "recall@10": 0.23973509933774834,
+  "ndcg@10": 0.13579191498987722,
+  "mrr@10": 0.10420818879428162,
+  "coverage@10": 1940,
+  "seen_generated_rate": 0.0634023178807947
+}
+```
+
+Final held-out test result for the selected protocol:
+
+```json
+{
+  "recall@1": 0.05529801324503311,
+  "recall@5": 0.1576158940397351,
   "recall@10": 0.23178807947019867,
-  "ndcg@10": 0.13475599887125705,
-  "mrr@10": 0.10509730106170502,
-  "coverage@10": 1924,
-  "seen_generated_rate": 0.05134933774834437
+  "ndcg@10": 0.13116514304560498,
+  "mrr@10": 0.10055246767581207,
+  "coverage@10": 1929,
+  "seen_generated_rate": 0.06085264900662252
 }
 ```
 
@@ -340,8 +375,7 @@ Best observed full-validation result:
 | Continued pre-training | behavior + metadata curriculum with SID tokens | Implemented |
 | SFT for next-item generation | target-only next SID prediction | Implemented |
 | Constrained SID decoding | trie-constrained beam search over valid item SIDs | Implemented |
-| Final test evaluation | held back until protocol freeze | Pending |
-| Strong external baseline reproduction | SASRec/BERT4Rec-style baseline not yet reproduced locally | Pending |
+| Final test evaluation | selected `w16 / 1 epoch` protocol trained on `train + val`, evaluated once on `test` | Implemented |
 
 ## Repro Path
 
@@ -353,9 +387,8 @@ For a fresh local run:
 4. Run `notebooks/sid_v2/00_qwen4b_embedding_stage.ipynb`.
 5. Run `notebooks/sid_v2/02_qwen4b_rqvae_sid_v2.ipynb`.
 6. Run `notebooks/cpt/03_cpt_qwen2_5_3b_base_sid_v2.ipynb`.
-7. Run `notebooks/sft/04_sft_qwen2_5_3b_sid_v2_next_watch_w12.ipynb`.
-8. Evaluate full validation from `best_adapter`.
-9. Run test only after the protocol is frozen.
+7. Run validation SFT notebooks under `notebooks/sft/` to select the history-window protocol.
+8. Run `notebooks/sft/08_sft_qwen2_5_3b_sid_v2_trainval_test_w16_1ep.ipynb` for the frozen train+val -> test protocol.
 
 ## Environment
 
