@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plum-ml1m-repro"
+version = "0.1.0"
+description = "PLUM-style generative recommendation reproduction/adaptation on MovieLens-1M."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "pandas",
+  "pyarrow",
+  "pyyaml",
+  "tqdm",
+]
+
+[project.optional-dependencies]
+modeling = [
+  "torch",
+  "transformers",
+  "datasets",
+  "accelerate",
+  "peft",
+  "safetensors",
+  "sentence-transformers",
+  "scikit-learn",
+]
+notebooks = [
+  "ipykernel",
+  "ipywidgets",
+  "matplotlib",
+  "seaborn",
+]
+dev = [
+  "pytest",
+  "ruff",
+]
+
+[project.scripts]
+plum-ml1m = "plum_ml1m.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["plum_ml1m*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]

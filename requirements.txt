@@ -2,6 +2,7 @@
 numpy
 pandas
 pyarrow
+pyyaml
 tqdm
 
 # Modeling
@@ -18,6 +19,7 @@ iterative-stratification
 transformers
 datasets
 accelerate
+peft
 safetensors
 sentence-transformers
 

@@ -4,12 +4,13 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 from src.cpt import CPTSchema
+from src.plum_ml1m.protocol import ACTIVE_SID_PROTOCOL
 
 
 @dataclass(frozen=True)
 class SFTSchema:
     cpt: CPTSchema = field(default_factory=CPTSchema)
-    n_sid_levels: int = 5
+    n_sid_levels: int = ACTIVE_SID_PROTOCOL.n_levels
 
     def user_feature_tokens(self, user_row: Any | None) -> list[str]:
         if user_row is None:

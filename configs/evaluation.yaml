@@ -1,0 +1,14 @@
+name: sid_v2_trie_constrained_evaluation
+stage: evaluate
+paths:
+  model_or_adapter: data/processed/artifacts/sft_qwen2_5_3b_sid_v2_next_watch_w16_pat2_v1/best_adapter
+  split: data/processed/splits/val.parquet
+  sid_array: runs/qwen4b_rqvae_sid_v2_plum/SIDs_best.npy
+  predictions: data/processed/artifacts/evaluation/predictions.parquet
+  metrics: data/processed/artifacts/evaluation/metrics.json
+evaluation:
+  target_id_space: original item_idx after SID-to-item mapping
+  constrained_decoding: trie
+  collision_policy: expand
+  filter_seen: true
+  k_values: [1, 5, 10]

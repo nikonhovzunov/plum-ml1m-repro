@@ -1,0 +1,14 @@
+name: movielens_1m_chronological_leave_one_out
+stage: prepare-data
+paths:
+  raw_dir: data/raw/ml-1m
+  processed_dir: data/processed
+  train: data/processed/splits/train.parquet
+  val: data/processed/splits/val.parquet
+  test: data/processed/splits/test.parquet
+split:
+  user_col: user_idx
+  item_col: item_idx
+  time_col: timestamp
+  pos_col: pos
+  protocol: chronological_leave_one_out

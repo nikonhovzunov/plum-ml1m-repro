@@ -1,0 +1,55 @@
+name: active_sid_v2_artifact_manifest
+stage: artifacts
+paths:
+  root: .
+artifacts:
+  - type: raw_movielens
+    path: data/raw/ml-1m
+    description: Raw MovieLens-1M ratings, movies, and users files.
+    tracked_by_git: false
+    required_for: [prepare-data]
+  - type: enriched_metadata
+    path: data/processed/item_features/qwen4b_audited_v1_item_profiles.parquet
+    description: Item table with title, year, genres, and audited overview text.
+    tracked_by_git: false
+    required_for: [embeddings, cpt]
+  - type: movie_overviews
+    path: data/processed/item_features/ml1m_movie_overviews.csv
+    description: Movie overview enrichment source table.
+    tracked_by_git: false
+    required_for: [metadata]
+  - type: embeddings
+    path: data/processed/item_features/qwen4b_audited_v1_meta_desc_embeddings.npz
+    description: Qwen text embeddings for metadata and descriptions.
+    tracked_by_git: false
+    required_for: [train-sid]
+  - type: sid_checkpoint
+    path: runs/qwen4b_rqvae_sid_v2_plum/checkpoints/best.pt
+    description: Best RQ-VAE checkpoint for active SID-v2.
+    tracked_by_git: false
+    required_for: [train-sid]
+  - type: sid_assignment_table
+    path: runs/qwen4b_rqvae_sid_v2_plum/sid_mapping_best.parquet
+    description: Item-to-SID assignment table with collision information.
+    tracked_by_git: false
+    required_for: [cpt, sft, evaluate]
+  - type: cpt_lora_adapter
+    path: data/processed/artifacts/cpt_qwen2_5_3b_base_sid_v2_plum_curriculum_v1/adapter
+    description: LoRA adapter from continued pre-training on SID metadata and train-only behavior.
+    tracked_by_git: false
+    required_for: [sft]
+  - type: sft_lora_adapter
+    path: data/processed/artifacts/sft_qwen2_5_3b_sid_v2_next_watch_w16_pat2_v1/best_adapter
+    description: Best SFT LoRA adapter selected on validation Recall@10.
+    tracked_by_git: false
+    required_for: [evaluate]
+  - type: predictions
+    path: data/processed/artifacts/evaluation/predictions.parquet
+    description: Generated recommendations after trie-constrained SID decoding.
+    tracked_by_git: false
+    required_for: [report]
+  - type: metrics_report
+    path: data/processed/artifacts/evaluation/metrics.json
+    description: Final ranking metrics for a frozen protocol.
+    tracked_by_git: false
+    required_for: [report]

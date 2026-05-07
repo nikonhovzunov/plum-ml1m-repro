@@ -1,0 +1,16 @@
+name: rqvae_sid_v2_qwen4b
+stage: train-sid
+paths:
+  embeddings: data/processed/item_features/qwen4b_audited_v1_meta_desc_embeddings.npz
+  behavior_pairs: runs/qwen4b_rqvae_sid_v2_plum/behavior_pairs.parquet
+  output_dir: runs/qwen4b_rqvae_sid_v2_plum
+  sid_array: runs/qwen4b_rqvae_sid_v2_plum/SIDs_best.npy
+  sid_mapping: runs/qwen4b_rqvae_sid_v2_plum/sid_mapping_best.parquet
+sid_protocol:
+  name: sid-v2
+  levels: 4
+  codebook_sizes: [1024, 512, 256, 128]
+  collision_policy: expand
+model:
+  approximate_parameters: 7300000
+  objective: reconstruction + residual quantization + behavior alignment

@@ -1,0 +1,10 @@
+name: ml1m_movie_metadata_and_overviews
+stage: build-metadata
+paths:
+  movies_dat: data/raw/ml-1m/movies.dat
+  item_meta: data/processed/item_features/item_meta.parquet
+  item_profiles: data/processed/item_features/qwen4b_audited_v1_item_profiles.parquet
+  overviews_csv: data/processed/item_features/ml1m_movie_overviews.csv
+policy:
+  keep_missing_descriptions: true
+  ambiguous_external_match: skip

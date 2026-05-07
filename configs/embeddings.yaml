@@ -1,0 +1,12 @@
+name: qwen4b_item_text_embeddings_sid_v2
+stage: build-embeddings
+paths:
+  item_profiles: data/processed/item_features/qwen4b_audited_v1_item_profiles.parquet
+  embeddings: data/processed/item_features/qwen4b_audited_v1_meta_desc_embeddings.npz
+  manifest: data/processed/item_features/qwen4b_audited_v1_embedding_manifest.json
+model:
+  name: Qwen/Qwen3-Embedding-4B
+  output_dim: 2560
+texts:
+  metadata: title + year + genres
+  description: plot overview
