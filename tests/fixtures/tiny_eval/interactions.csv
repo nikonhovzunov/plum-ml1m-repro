@@ -1,0 +1,5 @@
+user_id,item_idx,timestamp,split
+1,0,1,train
+1,1,2,val
+2,2,1,train
+2,3,2,val

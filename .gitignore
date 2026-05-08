@@ -5,6 +5,7 @@ data/processed/
 # Experiment outputs
 runs/
 reports/
+outputs/
 research/movie_overviews/data/
 research/movie_overviews/cache/*
 !research/movie_overviews/cache/.gitignore
@@ -12,6 +13,16 @@ notebooks/catboost_info/
 wandb/
 mlruns/
 lightning_logs/
+checkpoints/
+**/checkpoint-*/
+**/adapter_model.safetensors
+**/pytorch_model*.bin
+**/model*.safetensors
+**/*embeddings*.npz
+**/*predictions*.parquet
+**/*prediction*.jsonl
+**/beam_sweep_results.jsonl
+**/trainer_tmp/
 
 # Jupyter
 .ipynb_checkpoints/

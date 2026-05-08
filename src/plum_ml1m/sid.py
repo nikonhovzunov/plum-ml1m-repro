@@ -33,7 +33,9 @@ def format_sid(sid: Iterable[int], protocol: SIDProtocol = ACTIVE_SID_PROTOCOL) 
     return [format_sid_token(level, code) for level, code in enumerate(values)]
 
 
-def parse_sid(tokens: Iterable[str], protocol: SIDProtocol = ACTIVE_SID_PROTOCOL) -> tuple[int, ...]:
+def parse_sid(
+    tokens: Iterable[str], protocol: SIDProtocol = ACTIVE_SID_PROTOCOL
+) -> tuple[int, ...]:
     values: list[int | None] = [None] * protocol.n_levels
     for token in tokens:
         level, code = parse_sid_token(token)
@@ -76,9 +78,13 @@ class ItemSIDMapping:
         interactions: object | None = None,
         item_col: str = "item_idx",
         protocol: SIDProtocol = ACTIVE_SID_PROTOCOL,
-    ) -> "ItemSIDMapping":
+    ) -> ItemSIDMapping:
         popularity: dict[int, int] = {}
-        if interactions is not None and hasattr(interactions, "columns") and item_col in interactions.columns:
+        if (
+            interactions is not None
+            and hasattr(interactions, "columns")
+            and item_col in interactions.columns
+        ):
             popularity = {
                 int(item): int(count)
                 for item, count in Counter(interactions[item_col].astype(int)).items()

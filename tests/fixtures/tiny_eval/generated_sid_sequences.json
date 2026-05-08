@@ -1,0 +1,14 @@
+[
+  {
+    "user_id": 1,
+    "target_item_idx": 1,
+    "seen_item_idx": [0],
+    "generated_token_sequences": [[20, 21, 22, 23, 99], [10, 11, 12, 13, 99]]
+  },
+  {
+    "user_id": 2,
+    "target_item_idx": 3,
+    "seen_item_idx": [2],
+    "generated_token_sequences": [[10, 11, 12, 13, 99], [30, 31, 32, 33, 99], [40, 41, 42, 43, 99]]
+  }
+]

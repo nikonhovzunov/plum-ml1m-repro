@@ -36,7 +36,13 @@ def _maybe_run_notebook(plan: dict, args: argparse.Namespace) -> int:
         raise SystemExit("--execute requires --notebook for this command")
     root = find_project_root()
     script = root / "scripts" / "run_notebook_nbclient.py"
-    cmd = [sys.executable, str(script), str(resolve_project_path(notebook, root)), "--timeout", "-1"]
+    cmd = [
+        sys.executable,
+        str(script),
+        str(resolve_project_path(notebook, root)),
+        "--timeout",
+        "-1",
+    ]
     return subprocess.call(cmd, cwd=str(root))
 
 
@@ -51,8 +57,15 @@ def command_validate_config(args: argparse.Namespace) -> int:
 
 def command_validate_artifacts(args: argparse.Namespace) -> int:
     manifest = ArtifactManifest.load(args.manifest)
-    manifest.validate_required_types()
-    _print_json({"status": "ok", "artifacts": len(manifest.artifacts)})
+    if args.mode == "schema":
+        manifest.validate_schema()
+        _print_json({"status": "ok", "mode": "schema", "artifacts": len(manifest.artifacts)})
+        return 0
+    missing = manifest.validate_local(root=args.root)
+    if missing:
+        _print_json({"status": "missing", "mode": "local", "missing": missing})
+        return 2
+    _print_json({"status": "ok", "mode": "local", "artifacts": len(manifest.artifacts)})
     return 0
 
 
@@ -79,6 +92,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     artifacts = sub.add_parser("validate-artifacts")
     artifacts.add_argument("--manifest", default="configs/artifact_manifest.yaml")
+    artifacts.add_argument("--mode", choices=["schema", "local"], default="schema")
+    artifacts.add_argument("--root", default=".")
     artifacts.set_defaults(func=command_validate_artifacts)
 
     smoke = sub.add_parser("smoke-test")
@@ -91,7 +106,6 @@ def build_parser() -> argparse.ArgumentParser:
         "train-sid": "configs/rqvae_sid.yaml",
         "train-cpt": "configs/cpt.yaml",
         "train-sft": "configs/sft.yaml",
-        "evaluate": "configs/evaluation.yaml",
     }
 
     for name, default_config in default_configs.items():
@@ -100,6 +114,12 @@ def build_parser() -> argparse.ArgumentParser:
         stage_parser.add_argument("--notebook")
         stage_parser.add_argument("--execute", action="store_true")
         stage_parser.set_defaults(func=command_stage(name))
+
+    evaluate = sub.add_parser("evaluate")
+    evaluate.add_argument("--config", required=True)
+    evaluate.add_argument("--notebook")
+    evaluate.add_argument("--execute", action="store_true")
+    evaluate.set_defaults(func=command_stage("evaluate"))
 
     return parser
 

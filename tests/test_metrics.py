@@ -1,6 +1,13 @@
 import pytest
 
-from plum_ml1m.metrics import coverage_at_k, evaluate_rankings, mrr_at_k, ndcg_at_k, recall_at_k
+from plum_ml1m.metrics import (
+    coverage_at_k,
+    evaluate_rankings,
+    mrr_at_k,
+    ndcg_at_k,
+    recall_at_k,
+    validate_k_values,
+)
 
 
 def test_recall_ndcg_mrr_formulas():
@@ -30,3 +37,12 @@ def test_evaluate_rankings_and_coverage():
     assert metrics["recall@2"] == pytest.approx(2 / 3)
     assert metrics["coverage@3"] == 4
     assert coverage_at_k(records, 2) == 3
+
+
+def test_invalid_k_values_are_rejected():
+    with pytest.raises(ValueError):
+        validate_k_values(())
+    with pytest.raises(ValueError):
+        validate_k_values((10, 10))
+    with pytest.raises(ValueError):
+        evaluate_rankings([], k_values=(0,))

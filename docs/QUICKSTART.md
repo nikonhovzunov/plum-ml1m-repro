@@ -14,7 +14,7 @@ python -m pip install -e ".[dev]"
 make test
 make lint
 make config-check
-make artifacts-check
+make artifacts-check-schema
 make smoke-test
 ```
 
@@ -28,7 +28,8 @@ make embeddings
 make train-sid
 make train-cpt
 make train-sft
-make eval
+make eval-val
+make eval-test
 ```
 
 To execute a heavy notebook-backed step, pass `--execute --notebook ...` explicitly through the CLI. CI never does this.

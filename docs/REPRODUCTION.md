@@ -1,31 +1,52 @@
-# Reproduction Protocol
+# Reproduction
 
-The active protocol is SID-v2:
+This repository is a PLUM-style MovieLens-1M reproduction/adaptation. The code
+path is designed to make the current protocol inspectable and testable; it does
+not claim SOTA and does not include external recommender baselines.
 
-- MovieLens-1M chronological leave-one-out splits.
-- Item text signal: title, year, genres, and audited plot overview.
-- Text embeddings: `Qwen/Qwen3-Embedding-4B`, 2560 dimensions.
-- SID tokenizer: RQ-VAE with four residual levels and codebook sizes `[1024, 512, 256, 128]`.
-- CPT: LoRA continued pre-training on SID-aware item metadata plus train-only behavior.
-- SFT: separate LoRA adapter for next watched item prediction.
-- Evaluation: trie-constrained SID generation, SID-to-item mapping, seen-item filtering, Recall/NDCG/MRR on original `item_idx`.
-
-The reported metrics in README are existing experiment outputs. They were not recomputed while adding the reproducibility layer.
-
-## Heavy artifacts
-
-Raw data, processed datasets, embeddings, checkpoints, adapters, predictions, and metrics exports are intentionally not tracked by git. See `configs/artifact_manifest.yaml` and `docs/ARTIFACTS.md`.
-
-## Full pipeline shape
+## Lightweight Checks
 
 ```bash
-plum-ml1m prepare-data --config configs/prepare_data.yaml
-plum-ml1m build-metadata --config configs/metadata.yaml
-plum-ml1m build-embeddings --config configs/embeddings.yaml
-plum-ml1m train-sid --config configs/rqvae_sid.yaml
-plum-ml1m train-cpt --config configs/cpt.yaml
-plum-ml1m train-sft --config configs/sft.yaml
-plum-ml1m evaluate --config configs/evaluation.yaml
+python -m pip install -e ".[dev]"
+make lint
+make test
+make config-check
+make artifacts-check-schema
+make smoke-test
 ```
 
-By default these commands validate and print a plan. Use explicit execution flags for heavy notebook-backed runs.
+These checks validate package imports, SID schema, trie decoding, ranking
+metrics, config consistency, artifact manifest schema, and a tiny end-to-end
+evaluation fixture.
+
+## Full Pipeline Stages
+
+The heavy pipeline is local-artifact dependent:
+
+```bash
+make prepare-data
+make embeddings
+make train-sid
+make train-cpt
+make train-sft
+make eval-val
+make eval-test
+```
+
+Training and evaluation commands are planning/validation wrappers unless called
+with explicit execution options in the CLI. Heavy notebooks and experiment
+scripts are not run by CI.
+
+## Split Discipline
+
+- validation: model selection only;
+- test: one final evaluation after selecting settings;
+- test metrics must not be edited into reports unless an actual evaluation was
+  run.
+
+Validation and test evaluation configs are separate:
+
+```text
+configs/evaluation_val.yaml
+configs/evaluation_test.yaml
+```

@@ -54,7 +54,10 @@ def test_item_sid_mapping_collision_expand_and_seen_filtering():
     assert mapping.uniqueness == pytest.approx(2 / 3)
     assert mapping.resolve_sid((1, 2, 3, 4), policy="expand") == [0, 1]
     assert mapping.resolve_sid((1, 2, 3, 4), policy="representative") == [0]
-    assert mapping.sid_candidates_to_items([(1, 2, 3, 4), (5, 6, 7, 8)], k=10, seen_items={0}) == [1, 2]
+    assert mapping.sid_candidates_to_items([(1, 2, 3, 4), (5, 6, 7, 8)], k=10, seen_items={0}) == [
+        1,
+        2,
+    ]
 
 
 def test_format_single_sid_token():

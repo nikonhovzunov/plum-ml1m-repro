@@ -1,30 +1,56 @@
-# Artifacts
+# Artifact Contract
 
-The tracked repository contains code, configs, notebooks, and documentation. Heavy generated artifacts are intentionally ignored by git.
+The repository does not commit large generated artifacts: raw MovieLens files,
+processed datasets, embeddings, checkpoints, LoRA adapters, prediction dumps,
+and generated metric reports are local outputs.
 
-The artifact requirements are listed in:
+The contract lives in:
 
 ```text
 configs/artifact_manifest.yaml
 ```
 
-Required artifact classes:
+Each artifact record declares:
 
-- raw MovieLens data;
-- enriched metadata;
-- movie overviews;
-- embeddings;
-- SID checkpoint;
-- SID assignment table;
-- CPT LoRA adapter;
-- SFT LoRA adapter;
-- predictions;
-- final metrics report.
+- `name`
+- `stage`
+- `kind`
+- `path`
+- `required_for`
+- `produced_by`
+- `consumed_by`
+- `safe_to_commit`
+- `exists_required_for_ci`
+- `expected_type`
+- `expected_size_bytes`
+- `sha256`
+- `schema`
+- `notes`
 
-Use:
+## Validation Modes
+
+Schema-only validation is CI-safe and does not require local data:
 
 ```bash
-plum-ml1m validate-artifacts --manifest configs/artifact_manifest.yaml
+make artifacts-check-schema
 ```
 
-This validates the manifest schema and required artifact types. It does not require the large local files to exist.
+Local validation checks whether artifacts exist and whether checksums match when
+they are declared:
+
+```bash
+make artifacts-check-local
+```
+
+Local validation is expected to fail on a fresh clone until the heavy pipeline is
+run or the artifacts are provided by the maintainer.
+
+## Required Categories
+
+The manifest separates:
+
+- required input artifacts;
+- generated output artifacts;
+- optional diagnostics.
+
+Generated artifacts are intentionally marked `safe_to_commit: false`.

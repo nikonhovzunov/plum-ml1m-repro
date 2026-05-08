@@ -38,7 +38,7 @@ The active protocol is SID-v2.
 
 ## Reported Metrics
 
-The metrics below are preserved from existing experiment outputs. They were not recomputed while adding the reproducibility layer.
+The metrics below are preserved from existing experiment outputs. The Qwen3 test row was produced by the current train+val -> test run and is reported as an actual held-out evaluation, not as a manual edit.
 
 Validation runs used for protocol selection:
 
@@ -49,6 +49,7 @@ Validation runs used for protocol selection:
 | SID-v2 Qwen w12 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 12 | val 6040 | 0.0598 | 0.1657 | 0.2318 | 0.1348 | 0.1051 | 1924 | strong validation run |
 | SID-v2 Qwen w12/10/8 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, mixed windows | val 6040 | 0.0512 | 0.1455 | 0.2194 | 0.1222 | 0.0928 | 2076 | below w12 |
 | SID-v2 Qwen w16 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 16 | val 6040 | 0.0579 | 0.1623 | 0.2397 | 0.1358 | 0.1042 | 1940 | selected protocol |
+| SID-v2 Qwen3 w16 | Qwen3-4B CPT-LoRA merged checkpoint + SFT-LoRA, window 16 | val 6040 | 0.0601 | 0.1697 | 0.2522 | 0.1424 | 0.1091 | 2045 | strongest validation run |
 
 Train+val to held-out test:
 
@@ -56,6 +57,7 @@ Train+val to held-out test:
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 12, 3 epochs | train + val | 6040 | 0.0551 | 0.1507 | 0.2247 | 0.1280 | 0.0986 | 1917 | earlier test reference |
 | Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 1 epoch | train + val | 6040 | 0.0553 | 0.1576 | 0.2318 | 0.1312 | 0.1006 | 1929 | selected final protocol |
+| Qwen3-4B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 2 epochs | train + val | 6040 | 0.0545 | 0.1583 | 0.2336 | 0.1319 | 0.1010 | 2033 | held-out test parity with Qwen2.5 |
 
 Coverage@10 is the number of unique original items recommended across users. Invalid SID rate is not listed in the comparison table because the reported runs use trie-constrained decoding over valid item SID sequences.
 
@@ -86,7 +88,7 @@ Run lightweight checks:
 make test
 make lint
 make config-check
-make artifacts-check
+make artifacts-check-schema
 make smoke-test
 ```
 
@@ -103,7 +105,8 @@ plum-ml1m build-embeddings --config configs/embeddings.yaml
 plum-ml1m train-sid --config configs/rqvae_sid.yaml
 plum-ml1m train-cpt --config configs/cpt.yaml
 plum-ml1m train-sft --config configs/sft.yaml
-plum-ml1m evaluate --config configs/evaluation.yaml
+plum-ml1m evaluate --config configs/evaluation_val.yaml
+plum-ml1m evaluate --config configs/evaluation_test.yaml
 plum-ml1m smoke-test
 ```
 
@@ -113,9 +116,9 @@ plum-ml1m smoke-test
 configs/                 YAML configs and artifact manifest
 docs/                    public documentation
 notebooks/               experiment notebooks and archived runs
-scripts/                 notebook runners and experiment scripts
+scripts/                 notebook runner and legacy/experimental launchers
 src/plum_ml1m/           reusable public package surface
-src/cpt, src/sid, src/sft existing experiment helpers used by notebooks
+src/plum_ml1m/legacy/    historical CPT/SID/SFT helpers used by older notebooks
 tests/                   lightweight tests for protocol and evaluation logic
 ```
 
@@ -128,6 +131,8 @@ Large generated artifacts are intentionally not tracked. See [docs/ARTIFACTS.md]
 - [Pipeline](docs/PIPELINE.md)
 - [Evaluation](docs/EVALUATION.md)
 - [Artifacts](docs/ARTIFACTS.md)
+- [Environment](docs/ENVIRONMENT.md)
+- [Legacy code](docs/LEGACY_CODE.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Known limitations](docs/KNOWN_LIMITATIONS.md)
 

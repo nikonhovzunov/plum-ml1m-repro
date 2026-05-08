@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 
-
 TrieNode = dict[int, "TrieNode"]
 
 
@@ -13,7 +12,7 @@ class TokenTrie:
     root: TrieNode = field(default_factory=dict)
 
     @classmethod
-    def from_sequences(cls, sequences: Iterable[Iterable[int]], eos_id: int) -> "TokenTrie":
+    def from_sequences(cls, sequences: Iterable[Iterable[int]], eos_id: int) -> TokenTrie:
         trie = cls(eos_id=int(eos_id))
         for sequence in sequences:
             trie.insert(sequence)
@@ -45,7 +44,7 @@ class TokenTrie:
 
     def prefix_allowed_tokens_fn(self, prompt_length: int):
         def allowed_tokens(_batch_id: int, input_ids) -> list[int]:
-            generated = input_ids[int(prompt_length):]
+            generated = input_ids[int(prompt_length) :]
             if hasattr(generated, "tolist"):
                 generated = generated.tolist()
             return self.next_tokens(int(token_id) for token_id in generated)

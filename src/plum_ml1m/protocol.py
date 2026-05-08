@@ -20,9 +20,7 @@ class SIDProtocol:
     def validate_sid(self, sid: tuple[int, ...] | list[int]) -> tuple[int, ...]:
         values = tuple(int(x) for x in sid)
         if len(values) != self.n_levels:
-            raise ValueError(
-                f"{self.name} expects {self.n_levels} SID levels, got {len(values)}"
-            )
+            raise ValueError(f"{self.name} expects {self.n_levels} SID levels, got {len(values)}")
         for level, code in enumerate(values):
             size = int(self.codebook_sizes[level])
             if code < 0 or code >= size:

@@ -2,54 +2,165 @@ name: active_sid_v2_artifact_manifest
 stage: artifacts
 paths:
   root: .
+categories:
+  required_inputs:
+    - raw_movielens
+    - movie_overviews
+  generated_outputs:
+    - enriched_metadata
+    - embeddings
+    - sid_checkpoint
+    - sid_assignment_table
+    - cpt_lora_adapter
+    - sft_lora_adapter
+    - predictions
+    - metrics_report
+  optional_diagnostics: []
 artifacts:
-  - type: raw_movielens
+  - name: raw_movielens_1m
+    stage: prepare-data
+    kind: raw_movielens
     path: data/raw/ml-1m
-    description: Raw MovieLens-1M ratings, movies, and users files.
-    tracked_by_git: false
     required_for: [prepare-data]
-  - type: enriched_metadata
-    path: data/processed/item_features/qwen4b_audited_v1_item_profiles.parquet
-    description: Item table with title, year, genres, and audited overview text.
-    tracked_by_git: false
-    required_for: [embeddings, cpt]
-  - type: movie_overviews
+    produced_by: external_download
+    consumed_by: [prepare-data]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: dir
+    expected_size_bytes: null
+    sha256: null
+    schema:
+      files: [ratings.dat, movies.dat, users.dat]
+    notes: Raw MovieLens-1M files are required only for local full reproduction.
+  - name: audited_movie_overviews
+    stage: build-metadata
+    kind: movie_overviews
     path: data/processed/item_features/ml1m_movie_overviews.csv
-    description: Movie overview enrichment source table.
-    tracked_by_git: false
-    required_for: [metadata]
-  - type: embeddings
+    required_for: [build-metadata, build-embeddings]
+    produced_by: metadata_enrichment
+    consumed_by: [build-embeddings, train-cpt]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    expected_size_bytes: null
+    sha256: null
+    schema:
+      columns: [movie_id, title, year, genres, overview, source, status]
+    notes: Generated/enriched metadata is not committed; regenerate locally.
+  - name: item_profiles_qwen4b_audited_v1
+    stage: build-metadata
+    kind: enriched_metadata
+    path: data/processed/item_features/qwen4b_audited_v1_item_profiles.parquet
+    required_for: [build-embeddings, train-cpt]
+    produced_by: build-metadata
+    consumed_by: [build-embeddings, train-cpt]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    expected_size_bytes: null
+    sha256: null
+    schema:
+      columns: [item_idx, movie_id, title, year, genres, overview]
+    notes: Canonical item universe table for the active SID-v2 runs.
+  - name: qwen4b_meta_description_embeddings
+    stage: build-embeddings
+    kind: embeddings
     path: data/processed/item_features/qwen4b_audited_v1_meta_desc_embeddings.npz
-    description: Qwen text embeddings for metadata and descriptions.
-    tracked_by_git: false
     required_for: [train-sid]
-  - type: sid_checkpoint
+    produced_by: build-embeddings
+    consumed_by: [train-sid]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    expected_size_bytes: null
+    sha256: null
+    schema:
+      arrays: [meta_embeddings, description_embeddings]
+    notes: Qwen text embeddings are large generated artifacts.
+  - name: rqvae_sid_v2_best_checkpoint
+    stage: train-sid
+    kind: sid_checkpoint
     path: runs/qwen4b_rqvae_sid_v2_plum/checkpoints/best.pt
-    description: Best RQ-VAE checkpoint for active SID-v2.
-    tracked_by_git: false
     required_for: [train-sid]
-  - type: sid_assignment_table
+    produced_by: train-sid
+    consumed_by: [sid-export]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    expected_size_bytes: null
+    sha256: null
+    schema: {}
+    notes: Model checkpoint is intentionally excluded from git.
+  - name: rqvae_sid_v2_assignment_table
+    stage: train-sid
+    kind: sid_assignment_table
     path: runs/qwen4b_rqvae_sid_v2_plum/sid_mapping_best.parquet
-    description: Item-to-SID assignment table with collision information.
-    tracked_by_git: false
-    required_for: [cpt, sft, evaluate]
-  - type: cpt_lora_adapter
-    path: data/processed/artifacts/cpt_qwen2_5_3b_base_sid_v2_plum_curriculum_v1/adapter
-    description: LoRA adapter from continued pre-training on SID metadata and train-only behavior.
-    tracked_by_git: false
-    required_for: [sft]
-  - type: sft_lora_adapter
-    path: data/processed/artifacts/sft_qwen2_5_3b_sid_v2_next_watch_w16_pat2_v1/best_adapter
-    description: Best SFT LoRA adapter selected on validation Recall@10.
-    tracked_by_git: false
+    required_for: [train-cpt, train-sft, evaluate]
+    produced_by: train-sid
+    consumed_by: [train-cpt, train-sft, evaluate]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    expected_size_bytes: null
+    sha256: null
+    schema:
+      columns: [item_idx, sid_0, sid_1, sid_2, sid_3]
+    notes: Active SID-v2 uses exactly four SID levels.
+  - name: qwen3_cpt_lora_adapter
+    stage: train-cpt
+    kind: cpt_lora_adapter
+    path: data/processed/artifacts/cpt_qwen3_4b_base_sid_v2_plum_curriculum_v1/adapter
+    required_for: [train-sft]
+    produced_by: train-cpt
+    consumed_by: [train-sft]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: dir
+    expected_size_bytes: null
+    sha256: null
+    schema: {}
+    notes: LoRA adapter from Qwen3 CPT; generated locally.
+  - name: qwen3_sft_lora_adapter_w16
+    stage: train-sft
+    kind: sft_lora_adapter
+    path: data/processed/artifacts/sft_qwen3_4b_base_sid_v2_next_watch_w16_pat2_v1/best_adapter
     required_for: [evaluate]
-  - type: predictions
+    produced_by: train-sft
+    consumed_by: [evaluate]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: dir
+    expected_size_bytes: null
+    sha256: null
+    schema: {}
+    notes: Validation-selected SFT adapter; not committed.
+  - name: trie_decoded_predictions
+    stage: evaluate
+    kind: predictions
     path: data/processed/artifacts/evaluation/predictions.parquet
-    description: Generated recommendations after trie-constrained SID decoding.
-    tracked_by_git: false
     required_for: [report]
-  - type: metrics_report
+    produced_by: evaluate
+    consumed_by: [report]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    expected_size_bytes: null
+    sha256: null
+    schema:
+      columns: [user_id, target_item_idx, candidates]
+    notes: Generated prediction dumps can be large and are excluded from git.
+  - name: final_metrics_report
+    stage: evaluate
+    kind: metrics_report
     path: data/processed/artifacts/evaluation/metrics.json
-    description: Final ranking metrics for a frozen protocol.
-    tracked_by_git: false
     required_for: [report]
+    produced_by: evaluate
+    consumed_by: [report]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    expected_size_bytes: null
+    sha256: null
+    schema:
+      metrics: [recall@10, ndcg@10, mrr@10, coverage@10]
+    notes: Metrics must be generated by an actual evaluation run, never edited by hand.

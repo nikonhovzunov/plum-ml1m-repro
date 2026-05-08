@@ -27,7 +27,9 @@ def check_chronological_splits(
     pos_col: str = "pos",
 ) -> SplitCheckResult:
     violations: list[str] = []
-    users = set(train[user_col].unique()) | set(val[user_col].unique()) | set(test[user_col].unique())
+    users = (
+        set(train[user_col].unique()) | set(val[user_col].unique()) | set(test[user_col].unique())
+    )
 
     def order_value(frame):
         cols = [time_col]

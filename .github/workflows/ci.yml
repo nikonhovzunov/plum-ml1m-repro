@@ -21,6 +21,6 @@ jobs:
       - name: Config validation
         run: make config-check
       - name: Artifact manifest validation
-        run: make artifacts-check
+        run: make artifacts-check-schema
       - name: Smoke test
         run: make smoke-test

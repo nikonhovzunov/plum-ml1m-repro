@@ -19,7 +19,7 @@ flowchart LR
 
 ## CPT corpus
 
-The successful Qwen2.5-3B CPT series used a pre-built curriculum corpus:
+The active Qwen CPT series uses a pre-built curriculum corpus:
 
 - `15` synthetic corpus epochs.
 - One Trainer epoch over the generated corpus.

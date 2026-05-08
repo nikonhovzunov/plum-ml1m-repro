@@ -1,8 +1,11 @@
 # Known Limitations
 
-- This repository is a PLUM-style reproduction/adaptation, not a SOTA claim.
-- Public sequential recommendation baselines are intentionally not implemented here.
-- Reported metrics are preserved from existing experiment outputs unless evaluation is explicitly rerun.
-- Heavy training still lives primarily in notebooks and local artifact directories; the new CLI provides validated entry points and safe execution plans.
-- Full reproduction requires MovieLens-1M and local model/artifact generation.
-- External movie overview enrichment may depend on source availability and manual audit quality.
+- Large artifacts are local and are not stored in git.
+- A fresh clone can run schema checks and smoke tests, but full heavy
+  reproduction requires regenerating or obtaining local artifacts.
+- No explicit open-source license is currently declared. Reuse terms are
+  unspecified until the maintainer adds a license.
+- Legacy notebooks and experiment scripts are retained for research history and
+  are not guaranteed to be the canonical reproduction path.
+- Full trie-constrained generation over all users is slow compared with the
+  lightweight smoke tests.

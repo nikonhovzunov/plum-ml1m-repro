@@ -1,19 +1,20 @@
-# Repository Audit Summary
+# Maintenance Audit
 
-This audit focused on engineering and reproducibility quality, not benchmark expansion.
+Current audit focus:
 
-## Findings
+- one canonical package namespace: `plum_ml1m`;
+- no root-level `src` package;
+- active SID-v2 protocol has four levels and codebook sizes
+  `[1024, 512, 256, 128]`;
+- old CPT/SFT/SID research modules are explicit legacy modules;
+- validation and test evaluation configs are separate;
+- artifact manifest has schema-only and local validation modes;
+- tiny CPU-only evaluation fixture covers SID decoding, collision expansion,
+  seen filtering, and metric aggregation.
 
-- Core SID-v2 protocol is four levels with codebook sizes `[1024, 512, 256, 128]`.
-- Several notebooks contained local copies of SID formatting, trie decoding, metric, and path logic.
-- Existing `src/sft` utilities already covered parts of mapping, decoding, and metrics, but the public package surface was missing.
-- A stale default of five SID levels existed in `src/sft/schema.py`; the active SID-v2 protocol uses four levels.
-- Heavy generated artifacts are ignored by git through `data/processed/`, `data/raw/`, and `runs/`.
+Known intentional non-goals:
 
-## Actions Taken
-
-- Added a lightweight package under `src/plum_ml1m`.
-- Added tests for SID schema, decoding, metrics, split checks, configs, artifacts, and CLI smoke.
-- Added configs, artifact manifest, Makefile, pyproject, CI, and documentation.
-- Preserved reported metrics without recomputation.
-- Added no external recommender baselines.
+- no external recommender baselines are added;
+- no SOTA claim is made;
+- large generated artifacts are not committed;
+- root `README.md` is frozen for this maintenance pass.

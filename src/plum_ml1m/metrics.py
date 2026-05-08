@@ -33,7 +33,19 @@ def coverage_at_k(records: Iterable[dict], k: int) -> int:
     return len(recommended)
 
 
+def validate_k_values(k_values: Iterable[int]) -> tuple[int, ...]:
+    values = tuple(int(k) for k in k_values)
+    if not values:
+        raise ValueError("k_values must not be empty")
+    if any(k <= 0 for k in values):
+        raise ValueError("all k_values must be positive")
+    if len(set(values)) != len(values):
+        raise ValueError("k_values must be unique")
+    return values
+
+
 def evaluate_rankings(records: Iterable[dict], k_values: tuple[int, ...] = (1, 5, 10)) -> dict:
+    k_values = validate_k_values(k_values)
     records = list(records)
     metrics: dict[str, float | int] = {"n": len(records)}
     if not records:
