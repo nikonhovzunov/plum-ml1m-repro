@@ -2,7 +2,7 @@
 
 This repository contains a PLUM-style reproduction/adaptation for MovieLens-1M. The goal is to study a generative recommendation pipeline based on Semantic IDs, continued pre-training, supervised fine-tuning, and constrained decoding.
 
-This is **not** a SOTA claim and it does **not** add external recommender baselines. The current focus is reproducibility, inspectability, and a clean engineering surface for review.
+This is **not** a SOTA claim. The current focus is reproducibility, inspectability, and a clean engineering surface for review. A simple global Popularity sanity baseline is included only to anchor the reported generative results; this repository is not a broad recommender benchmark suite.
 
 ## What Is Implemented
 
@@ -15,7 +15,9 @@ This is **not** a SOTA claim and it does **not** add external recommender baseli
 7. Trie-constrained SID decoding.
 8. SID-to-original-item mapping with collision expansion and seen-item filtering.
 9. Recall/NDCG/MRR/Coverage evaluation.
-10. Lightweight configs, tests, CLI, Makefile, docs, and CI.
+10. Lightweight global Popularity sanity baseline.
+11. Qwen3 no-CPT direct SFT ablation for measuring the value of CPT grounding.
+12. Lightweight configs, tests, CLI, Makefile, docs, and CI.
 
 ## Active Protocol
 
@@ -35,10 +37,11 @@ The active protocol is SID-v2.
 | SFT target | next watched item |
 | Decoding | trie-constrained beam search |
 | Metric id space | original `item_idx` after SID-to-item mapping |
+| Main test seen filtering | all items watched before the target timestamp |
 
 ## Reported Metrics
 
-The metrics below are preserved from existing experiment outputs. The Qwen3 test row was produced by the current train+val -> test run and is reported as an actual held-out evaluation, not as a manual edit.
+The metrics below are preserved from existing experiment outputs. The Qwen3 test rows and Popularity sanity baseline were produced by current train+val -> test runs and are reported as actual held-out evaluations, not as manual edits. The no-CPT ablation is intentionally listed separately because it was measured on a 256-user validation sample, not on the full validation or test split.
 
 Validation runs used for protocol selection:
 
@@ -51,13 +54,21 @@ Validation runs used for protocol selection:
 | SID-v2 Qwen w16 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 16 | val 6040 | 0.0579 | 0.1623 | 0.2397 | 0.1358 | 0.1042 | 1940 | selected protocol |
 | SID-v2 Qwen3 w16 | Qwen3-4B CPT-LoRA merged checkpoint + SFT-LoRA, window 16 | val 6040 | 0.0601 | 0.1697 | 0.2522 | 0.1424 | 0.1091 | 2045 | strongest validation run |
 
+Qwen3 SFT-only ablation on a fixed 256-user validation sample:
+
+This run measures how far direct SFT can go without a separate CPT grounding stage. It eventually learns useful SID recommendations, but the validation curve is slower and less stable than the CPT-grounded setup. The best sample checkpoint reaches `Recall@10 = 0.1992`; this ablation has not been promoted to the full validation or held-out test table.
+
+![Qwen3 SFT-only validation metrics](docs/assets/qwen3_sft_only_validation_recall_ndcg_epochs_1_18.png)
+
 Train+val to held-out test:
 
-| Protocol | Train split | Test users | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 | Status |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 12, 3 epochs | train + val | 6040 | 0.0551 | 0.1507 | 0.2247 | 0.1280 | 0.0986 | 1917 | earlier test reference |
-| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 1 epoch | train + val | 6040 | 0.0553 | 0.1576 | 0.2318 | 0.1312 | 0.1006 | 1929 | selected final protocol |
-| Qwen3-4B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 2 epochs | train + val | 6040 | 0.0545 | 0.1583 | 0.2336 | 0.1319 | 0.1010 | 2033 | held-out test parity with Qwen2.5 |
+| Protocol | Train source | Seen filtering | Test users | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 | Status |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| Global Popularity | train + val | all prior user history | 6040 | 0.0056 | 0.0202 | 0.0363 | 0.0178 | 0.0123 | 199 | sanity baseline |
+| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 12, 3 epochs | train + val | prompt window | 6040 | 0.0551 | 0.1507 | 0.2247 | 0.1280 | 0.0986 | 1917 | earlier test reference |
+| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 1 epoch | train + val | prompt window | 6040 | 0.0553 | 0.1576 | 0.2318 | 0.1312 | 0.1006 | 1929 | previous selected protocol |
+| Qwen3-4B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 2 epochs | train + val | prompt window | 6040 | 0.0545 | 0.1583 | 0.2336 | 0.1319 | 0.1010 | 2033 | diagnostic window-only filter |
+| Qwen3-4B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 2 epochs | train + val | all prior user history | 6040 | 0.0626 | 0.1765 | 0.2525 | 0.1451 | 0.1123 | 2108 | current main held-out result |
 
 Coverage@10 is the number of unique original items recommended across users. Invalid SID rate is not listed in the comparison table because the reported runs use trie-constrained decoding over valid item SID sequences.
 
@@ -69,7 +80,7 @@ Evaluation is item-level, not SID-level:
 2. A trie restricts generation to valid item SID sequences.
 3. Each generated SID is mapped back to one or more original `item_idx` values.
 4. SID collisions are expanded.
-5. Already seen items and duplicate recommendations are removed.
+5. Already seen items and duplicate recommendations are removed. Current main test reporting filters all items watched before the target timestamp; earlier diagnostic rows may use prompt-window-only filtering and are marked in the table.
 6. Recall@K, NDCG@K, MRR@K, and Coverage@K are computed over original item IDs.
 
 Formulas and tests are documented in [docs/EVALUATION.md](docs/EVALUATION.md).

@@ -150,10 +150,20 @@ def main() -> None:
     parser.add_argument("--max-users", type=int, default=256)
     parser.add_argument("--split", choices=["val", "test"], default="val")
     parser.add_argument("--configs", default="20:20,40:40,100:100")
+    parser.add_argument("--eval-batch-size", type=int, default=1)
     parser.add_argument("--output-dir", type=Path, default=SWEEP_DIR)
     parser.add_argument("--run-name", default=RUN_NAME)
     parser.add_argument("--base-cpt-dir", type=Path, default=BASE_CPT_DIR)
     parser.add_argument("--adapter-dir", type=Path, default=BEST_ADAPTER_DIR)
+    parser.add_argument(
+        "--seen-filter-scope",
+        choices=["prompt", "all"],
+        default="prompt",
+        help=(
+            "prompt filters only the visible prompt history; all filters every item "
+            "seen before the validation/test target."
+        ),
+    )
     parser.add_argument("--wait-pids", default="")
     parser.add_argument("--wait-poll-seconds", type=int, default=60)
     args = parser.parse_args()
@@ -277,7 +287,8 @@ def main() -> None:
             event_blocks = event_blocks[1:]
         return prefix + [NEXT]
 
-    def encode_example(user_id: int, history_events, target_event, split: str):
+    def encode_example(user_id: int, history_events, target_event, split: str, seen_events=None):
+        seen_events = history_events if seen_events is None else seen_events
         target_item = int(target_event["item_idx"])
         target_tokens = item_sid_tokens(target_item) + [EOS]
         prompt_tokens = fit_prompt(prompt_prefix_tokens(user_id), history_events, target_tokens)
@@ -290,6 +301,7 @@ def main() -> None:
             "split": split,
             "target_item_idx": target_item,
             "history_item_idx": [int(event["item_idx"]) for event in history_events],
+            "all_seen_item_idx": [int(event["item_idx"]) for event in seen_events],
         }
 
     def build_eval_examples(split: str, max_users: int | None):
@@ -307,16 +319,25 @@ def main() -> None:
             )
         examples = []
         for user_id in user_ids:
-            history = context_by_user.get(int(user_id), [])[-EVAL_HISTORY_LEN:]
+            full_history = context_by_user.get(int(user_id), [])
+            history = full_history[-EVAL_HISTORY_LEN:]
             if len(history) < MIN_HISTORY_LEN:
                 continue
             examples.append(
-                encode_example(int(user_id), history, target_by_user[int(user_id)], split)
+                encode_example(
+                    int(user_id),
+                    history,
+                    target_by_user[int(user_id)],
+                    split,
+                    seen_events=full_history,
+                )
             )
         return examples
 
     max_users = None if args.max_users is not None and args.max_users <= 0 else args.max_users
     examples = build_eval_examples(args.split, max_users)
+    if args.eval_batch_size <= 0:
+        raise ValueError("--eval-batch-size must be positive")
 
     model = load_causal_lm(base_cpt_dir, dtype)
     model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
@@ -340,6 +361,20 @@ def main() -> None:
 
         return allowed
 
+    def batched_trie_allowed_tokens(start_lengths: list[int]):
+        def allowed(batch_id, input_ids):
+            node = trie
+            start = int(start_lengths[int(batch_id)])
+            generated = input_ids[start:].tolist()
+            for token_id in generated:
+                token_id = int(token_id)
+                if token_id not in node:
+                    return [eos_id]
+                node = node[token_id]
+            return sorted(node.keys()) if node else [eos_id]
+
+        return allowed
+
     def decode_generated_item(sequence_ids, prompt_length):
         new_ids = []
         for token_id in sequence_ids[prompt_length:].tolist():
@@ -353,7 +388,8 @@ def main() -> None:
         prompt_ids = example["input_ids"][: example["prompt_length"]]
         input_ids = torch.tensor([prompt_ids], dtype=torch.long, device=device)
         attention_mask = torch.ones_like(input_ids)
-        seen = set(example.get("history_item_idx", [])) if FILTER_SEEN else set()
+        seen_field = "all_seen_item_idx" if args.seen_filter_scope == "all" else "history_item_idx"
+        seen = set(example.get(seen_field, [])) if FILTER_SEEN else set()
         num_return_sequences = min(int(num_return_sequences), int(beam_size))
 
         with torch.inference_mode():
@@ -398,18 +434,96 @@ def main() -> None:
             "generated_count": int(len(outputs)),
         }
 
+    def generate_batch(batch, beam_size: int, num_return_sequences: int):
+        prompt_ids_list = [ex["input_ids"][: ex["prompt_length"]] for ex in batch]
+        max_prompt_len = max(len(ids) for ids in prompt_ids_list)
+        batch_input_ids = torch.full(
+            (len(batch), max_prompt_len),
+            fill_value=pad_id,
+            dtype=torch.long,
+            device=device,
+        )
+        attention_mask = torch.zeros_like(batch_input_ids)
+        for row_idx, prompt_ids in enumerate(prompt_ids_list):
+            ids = torch.tensor(prompt_ids, dtype=torch.long, device=device)
+            batch_input_ids[row_idx, -len(prompt_ids) :] = ids
+            attention_mask[row_idx, -len(prompt_ids) :] = 1
+
+        num_return_sequences = min(int(num_return_sequences), int(beam_size))
+        with torch.inference_mode():
+            outputs = model.generate(
+                input_ids=batch_input_ids,
+                attention_mask=attention_mask,
+                max_new_tokens=MAX_TARGET_TOKENS,
+                num_beams=int(beam_size),
+                num_return_sequences=int(num_return_sequences),
+                do_sample=False,
+                early_stopping=True,
+                pad_token_id=pad_id,
+                eos_token_id=eos_id,
+                prefix_allowed_tokens_fn=batched_trie_allowed_tokens([max_prompt_len] * len(batch)),
+                use_cache=True,
+            )
+
+        seen_field = "all_seen_item_idx" if args.seen_filter_scope == "all" else "history_item_idx"
+        results = []
+        for row_idx, example in enumerate(batch):
+            candidates = []
+            raw_items = []
+            invalid = 0
+            seen_generated = 0
+            used = set()
+            seen = set(example.get(seen_field, [])) if FILTER_SEEN else set()
+            start = row_idx * num_return_sequences
+            end = start + num_return_sequences
+            for seq in outputs[start:end]:
+                item = decode_generated_item(seq, max_prompt_len)
+                if item is None:
+                    invalid += 1
+                    continue
+                raw_items.append(int(item))
+                if item in seen:
+                    seen_generated += 1
+                    continue
+                if item in used:
+                    continue
+                used.add(int(item))
+                candidates.append(int(item))
+            results.append(
+                {
+                    "candidates": candidates,
+                    "raw_items": raw_items,
+                    "invalid_sid_count": invalid,
+                    "seen_generated_count": seen_generated,
+                    "generated_count": int(num_return_sequences),
+                }
+            )
+        return results
+
     def evaluate_config(beam_size: int, num_return_sequences: int):
         started = time.time()
         records = []
-        for ex in tqdm(
-            examples,
+        batches = [
+            examples[i : i + args.eval_batch_size]
+            for i in range(0, len(examples), args.eval_batch_size)
+        ]
+        for batch in tqdm(
+            batches,
             desc=f"{args.split} beam={beam_size} return={num_return_sequences}",
             leave=False,
         ):
-            gen = generate_candidates(
-                ex, beam_size=beam_size, num_return_sequences=num_return_sequences
-            )
-            records.append({"target_item_idx": int(ex["target_item_idx"]), **gen})
+            if args.eval_batch_size == 1:
+                batch_generations = [
+                    generate_candidates(
+                        batch[0], beam_size=beam_size, num_return_sequences=num_return_sequences
+                    )
+                ]
+            else:
+                batch_generations = generate_batch(
+                    batch, beam_size=beam_size, num_return_sequences=num_return_sequences
+                )
+            for ex, gen in zip(batch, batch_generations, strict=True):
+                records.append({"target_item_idx": int(ex["target_item_idx"]), **gen})
 
         metrics = {
             "split": args.split,
@@ -477,6 +591,9 @@ def main() -> None:
         "max_users": max_users,
         "examples": len(examples),
         "configs": args.configs,
+        "eval_batch_size": args.eval_batch_size,
+        "seen_filter_scope": args.seen_filter_scope,
+        "filter_seen": FILTER_SEEN,
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
     (args.output_dir / "beam_sweep_config.json").write_text(
