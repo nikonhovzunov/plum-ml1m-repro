@@ -4,7 +4,6 @@ data/processed/
 
 # Experiment outputs
 runs/
-reports/
 outputs/
 local_archive/
 *.log
@@ -29,6 +28,14 @@ checkpoints/
 **/*prediction*.jsonl
 **/beam_sweep_results.jsonl
 **/trainer_tmp/
+
+# Compact committed metric snapshots only. Heavy reports stay ignored.
+reports/*
+!reports/README.md
+!reports/schema.md
+!reports/snapshots/
+!reports/snapshots/*.json
+!reports/snapshots/*.csv
 
 # Jupyter
 .ipynb_checkpoints/

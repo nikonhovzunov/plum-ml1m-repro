@@ -1,0 +1,17 @@
+name: tiny_eval_report
+stage: evaluate
+paths:
+  model_or_adapter: tests/fixtures/tiny_eval_report/model
+  split: tests/fixtures/tiny_eval_report/test.parquet
+  sid_array: tests/fixtures/tiny_eval_report/sids.npy
+  predictions: tests/fixtures/tiny_eval_report/predictions.csv
+  metrics: tests/fixtures/tiny_eval_report/report.json
+evaluation:
+  split_name: test
+  target_id_space: original item_idx after SID-to-item mapping
+  constrained_decoding: trie
+  trie_constrained: true
+  collision_policy: expand
+  filter_seen: true
+  seen_filter_scope: all_prior_user_history
+  k_values: [1, 5, 10, 20]

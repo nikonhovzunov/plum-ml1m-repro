@@ -9,7 +9,7 @@ paths:
 sid_protocol:
   name: sid-v2
   levels: 4
-  codebook_sizes: [1024, 512, 256, 128]
+  codebook_sizes: [512, 256, 128, 64]
   collision_policy: expand
 model:
   approximate_parameters: 7300000

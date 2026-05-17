@@ -8,6 +8,8 @@ from plum_ml1m.artifacts import ArtifactManifest, sha256_file
 from plum_ml1m.config import ConfigError, validate_config
 from plum_ml1m.splits import check_chronological_splits
 
+ARTIFACT_FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures" / "artifacts"
+
 
 def test_chronological_split_no_leakage_passes():
     train = pd.DataFrame({"user_idx": [1, 1, 2], "timestamp": [1, 2, 1], "pos": [0, 1, 0]})
@@ -163,3 +165,51 @@ def test_artifact_local_check_and_checksum(tmp_path: Path):
     manifest_path.write_text(yaml.safe_dump({"artifacts": rows}), encoding="utf-8")
     manifest = ArtifactManifest.load(manifest_path)
     assert manifest.validate_local(root=tmp_path) == []
+
+
+def test_artifact_schema_only_check_does_not_require_files(tmp_path: Path):
+    manifest_path = tmp_path / "manifest_valid.yaml"
+    manifest_path.write_text(
+        (ARTIFACT_FIXTURE_DIR / "manifest_valid.yaml").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    manifest = ArtifactManifest.load(manifest_path)
+    manifest.validate_schema()
+
+
+def test_artifact_local_check_detects_missing_files(tmp_path: Path):
+    manifest_path = tmp_path / "manifest_valid.yaml"
+    manifest_path.write_text(
+        (ARTIFACT_FIXTURE_DIR / "manifest_valid.yaml").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    errors = ArtifactManifest.load(manifest_path).validate_local(root=tmp_path)
+
+    assert errors
+    assert any("raw_movielens_1m: missing" in error for error in errors)
+
+
+def test_artifact_local_check_validates_csv_and_parquet_columns():
+    errors = ArtifactManifest.load(
+        ARTIFACT_FIXTURE_DIR / "manifest_missing_column.yaml"
+    ).validate_local(root=ARTIFACT_FIXTURE_DIR)
+
+    assert any("missing_csv_column" in error and "available columns" in error for error in errors)
+    assert any(
+        "missing_parquet_column" in error and "available columns" in error for error in errors
+    )
+
+
+def test_artifact_local_check_validates_fixture_checksum(tmp_path: Path):
+    valid = ArtifactManifest.load(ARTIFACT_FIXTURE_DIR / "manifest_valid.yaml")
+    assert valid.validate_local(root=ARTIFACT_FIXTURE_DIR) == []
+
+    manifest_path = tmp_path / "manifest_bad_checksum.yaml"
+    data = yaml.safe_load((ARTIFACT_FIXTURE_DIR / "manifest_valid.yaml").read_text(encoding="utf-8"))
+    data["artifacts"][0]["sha256"] = "0" * 64
+    manifest_path.write_text(yaml.safe_dump(data), encoding="utf-8")
+
+    errors = ArtifactManifest.load(manifest_path).validate_local(root=ARTIFACT_FIXTURE_DIR)
+    assert any("sha256 mismatch" in error for error in errors)

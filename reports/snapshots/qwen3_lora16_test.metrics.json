@@ -1,0 +1,53 @@
+{
+  "run_id": "qwen3_lora16_test",
+  "method": "Qwen3-4B LoRA16",
+  "method_family": "plum_style_generative",
+  "split": "test",
+  "dataset": "MovieLens-1M",
+  "git_commit": "3cde9ca",
+  "source": {
+    "script_or_notebook": "notebooks/sft/11_sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch.ipynb",
+    "config": "data/processed/artifacts/sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch_v1/config.json",
+    "source_local_path": "data/processed/artifacts/sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch_v1/test_full_beam20_return20_strict_full_seen_b5/beam_sweep_results.json",
+    "source_available_in_git": false,
+    "note": "Scalar metrics copied from the local JSON artifact; adapters and predictions are not committed."
+  },
+  "protocol": {
+    "context_source": "train+val",
+    "seen_filter_scope": "all_prior_user_history",
+    "target_policy": "next held-out test item",
+    "candidate_universe": "valid SID-v2 item trie mapped to MovieLens-1M item_idx",
+    "id_space": "original_item_idx",
+    "k_values": [1, 5, 10, 20]
+  },
+  "model": {
+    "base_model": "Qwen3-4B",
+    "adapter": "CPT-LoRA16 + SFT-LoRA16",
+    "sid_protocol": "SID-v2",
+    "notes": "Trie-constrained Semantic ID generation; beam20 return20."
+  },
+  "metrics": {
+    "recall@1": 0.06258278145695365,
+    "recall@5": 0.17649006622516555,
+    "recall@10": 0.25248344370860926,
+    "recall@20": 0.3127483443708609,
+    "ndcg@10": 0.1451394146186196,
+    "mrr@10": 0.1123400872490278,
+    "coverage@10": 2108
+  },
+  "diagnostics": {
+    "n": 6040,
+    "beam_size": 20,
+    "num_return_sequences": 20,
+    "invalid_sid_rate": 0.0,
+    "raw_valid_rate": 1.0,
+    "seen_generated_rate": 0.22369205298013245,
+    "avg_unique_filtered_candidates": 15.526158940397352
+  },
+  "artifact_policy": {
+    "predictions_committed": false,
+    "checkpoints_committed": false,
+    "large_artifacts_committed": false
+  },
+  "limitations": []
+}

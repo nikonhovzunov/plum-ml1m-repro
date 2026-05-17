@@ -1,0 +1,86 @@
+name: tiny_artifact_manifest_missing_column
+artifacts:
+  - name: raw_movielens_1m
+    stage: unit
+    kind: raw_movielens
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+  - name: enriched_metadata_missing_csv_column
+    stage: unit
+    kind: enriched_metadata
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    schema:
+      columns: [id, missing_csv_column]
+  - name: movie_overviews
+    stage: unit
+    kind: movie_overviews
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+  - name: embeddings
+    stage: unit
+    kind: embeddings
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+  - name: sid_checkpoint
+    stage: unit
+    kind: sid_checkpoint
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+  - name: sid_assignment_missing_parquet_column
+    stage: unit
+    kind: sid_assignment_table
+    path: tiny.parquet
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+    schema:
+      columns: [id, missing_parquet_column]
+  - name: cpt_lora_adapter
+    stage: unit
+    kind: cpt_lora_adapter
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+  - name: sft_lora_adapter
+    stage: unit
+    kind: sft_lora_adapter
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+  - name: predictions
+    stage: unit
+    kind: predictions
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file
+  - name: metrics_report
+    stage: unit
+    kind: metrics_report
+    path: tiny.csv
+    required_for: [unit]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: file

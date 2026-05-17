@@ -14,13 +14,13 @@ from plum_ml1m.sid import (
 
 
 def test_sid_schema_roundtrip():
-    sid = (1023, 511, 255, 127)
+    sid = (511, 255, 127, 63)
     tokens = format_sid(sid)
     assert tokens == [
-        "<sid_0_1023>",
-        "<sid_1_511>",
-        "<sid_2_255>",
-        "<sid_3_127>",
+        "<sid_0_511>",
+        "<sid_1_255>",
+        "<sid_2_127>",
+        "<sid_3_63>",
     ]
     assert parse_sid(tokens) == sid
     assert ACTIVE_SID_PROTOCOL.n_levels == 4

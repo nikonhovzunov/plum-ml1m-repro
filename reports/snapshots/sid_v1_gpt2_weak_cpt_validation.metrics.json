@@ -1,0 +1,47 @@
+{
+  "run_id": "sid_v1_gpt2_weak_cpt_validation",
+  "method": "GPT-2 S weak-CPT SFT",
+  "method_family": "legacy_validation",
+  "split": "validation",
+  "dataset": "MovieLens-1M",
+  "git_commit": "3cde9ca",
+  "source": {
+    "script_or_notebook": "docs/RESULTS.md",
+    "config": null,
+    "source_local_path": "docs/RESULTS.md",
+    "source_available_in_git": false,
+    "note": "Only the documented Recall@10 value is preserved; original local artifact was not identified for this snapshot."
+  },
+  "protocol": {
+    "context_source": "train",
+    "seen_filter_scope": "unknown",
+    "target_policy": "next validation item",
+    "candidate_universe": "MovieLens-1M item_idx universe",
+    "id_space": "original_item_idx",
+    "k_values": [1, 5, 10, 20]
+  },
+  "model": {
+    "base_model": "GPT-2 small",
+    "adapter": null,
+    "sid_protocol": "SID-v1",
+    "notes": "Discarded first retrieval attempt."
+  },
+  "metrics": {
+    "recall@1": null,
+    "recall@5": null,
+    "recall@10": 0.0253,
+    "recall@20": null,
+    "ndcg@10": null,
+    "mrr@10": null,
+    "coverage@10": null
+  },
+  "diagnostics": {
+    "n": 6040
+  },
+  "artifact_policy": {
+    "predictions_committed": false,
+    "checkpoints_committed": false,
+    "large_artifacts_committed": false
+  },
+  "limitations": ["Original metric artifact not identified; snapshot is provenance for a documented legacy number only."]
+}

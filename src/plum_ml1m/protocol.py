@@ -32,6 +32,6 @@ class SIDProtocol:
 
 ACTIVE_SID_PROTOCOL = SIDProtocol(
     name="sid-v2",
-    codebook_sizes=(1024, 512, 256, 128),
+    codebook_sizes=(512, 256, 128, 64),
     collision_policy="expand",
 )

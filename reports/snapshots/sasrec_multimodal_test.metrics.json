@@ -1,0 +1,52 @@
+{
+  "run_id": "sasrec_multimodal_test",
+  "method": "SASRec-style + Qwen content",
+  "method_family": "neural_sequential_baseline",
+  "split": "test",
+  "dataset": "MovieLens-1M",
+  "git_commit": "3cde9ca",
+  "source": {
+    "script_or_notebook": "scripts/experiments/sasrec_multimodal_train.py",
+    "config": "reports/sasrec_multimodal/sasrec_qwen_concat_w16/run_config_test.json",
+    "source_local_path": "reports/sasrec_multimodal/sasrec_qwen_concat_w16/metrics_test.json",
+    "source_available_in_git": false,
+    "note": "Scalar metrics copied from the local JSON artifact; model weights and predictions are not committed."
+  },
+  "protocol": {
+    "context_source": "train+val",
+    "seen_filter_scope": "all_prior_user_history",
+    "target_policy": "next held-out test item",
+    "candidate_universe": "MovieLens-1M item_idx universe",
+    "id_space": "original_item_idx",
+    "k_values": [1, 5, 10, 20]
+  },
+  "model": {
+    "base_model": "SASRec-style causal next-item Transformer",
+    "adapter": null,
+    "sid_protocol": null,
+    "notes": "Causal next-item Transformer with item ID embedding plus projected Qwen3-4B concat content vector; history window 16."
+  },
+  "metrics": {
+    "recall@1": 0.08443708609271523,
+    "recall@5": 0.225,
+    "recall@10": 0.31043046357615894,
+    "recall@20": 0.4119205298013245,
+    "ndcg@10": 0.18348224866234136,
+    "mrr@10": 0.14460291180489857,
+    "coverage@10": 2455
+  },
+  "diagnostics": {
+    "n": 6040,
+    "best_epoch": 3,
+    "history_window": 16,
+    "cuda_peak_allocated_gb": 3.267094612121582
+  },
+  "artifact_policy": {
+    "predictions_committed": false,
+    "checkpoints_committed": false,
+    "large_artifacts_committed": false
+  },
+  "limitations": [
+    "Architecture is a compact local SASRec-style implementation with Qwen content features, not an ID-only SASRec comparison and not a broad hyperparameter benchmark."
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "run_id": "bert4rec_style_multimodal_test",
+  "method": "BERT4Rec-style + Qwen content",
+  "method_family": "neural_sequential_baseline",
+  "split": "test",
+  "dataset": "MovieLens-1M",
+  "git_commit": "3cde9ca",
+  "source": {
+    "script_or_notebook": "scripts/experiments/bert4rec_multimodal_train.py",
+    "config": "reports/bert4rec_multimodal/bert4rec_qwen_concat_w16/run_config_test.json",
+    "source_local_path": "reports/bert4rec_multimodal/bert4rec_qwen_concat_w16/metrics_test.json",
+    "source_available_in_git": false,
+    "note": "Scalar metrics copied from the local JSON artifact; model weights and predictions are not committed."
+  },
+  "protocol": {
+    "context_source": "train+val",
+    "seen_filter_scope": "all_prior_user_history",
+    "target_policy": "next held-out test item",
+    "candidate_universe": "MovieLens-1M item_idx universe",
+    "id_space": "original_item_idx",
+    "k_values": [1, 5, 10, 20]
+  },
+  "model": {
+    "base_model": "BERT4Rec-style masked next-item Transformer",
+    "adapter": null,
+    "sid_protocol": null,
+    "notes": "Masked last-position next-item Transformer with item ID embedding plus projected Qwen3-4B concat content vector; history window 16."
+  },
+  "metrics": {
+    "recall@1": 0.08609271523178808,
+    "recall@5": 0.2165562913907285,
+    "recall@10": 0.3066225165562914,
+    "recall@20": 0.40943708609271523,
+    "ndcg@10": 0.18228980453273455,
+    "mrr@10": 0.14432907600126144,
+    "coverage@10": 2842
+  },
+  "diagnostics": {
+    "n": 6040,
+    "best_epoch": 25,
+    "history_window": 16,
+    "cuda_peak_allocated_gb": 2.1552157402038574
+  },
+  "artifact_policy": {
+    "predictions_committed": false,
+    "checkpoints_committed": false,
+    "large_artifacts_committed": false
+  },
+  "limitations": [
+    "Architecture is a compact local BERT4Rec-style next-item implementation, not canonical random-mask BERT4Rec pretraining and not a broad hyperparameter benchmark."
+  ]
+}

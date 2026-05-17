@@ -1,0 +1,25 @@
+{
+  "split": "test",
+  "dataset": "MovieLens-1M",
+  "metrics": {
+    "recall@1": 0.5,
+    "recall@5": 0.5,
+    "recall@10": 0.5,
+    "recall@20": 0.5,
+    "ndcg@10": 0.5,
+    "mrr@10": 0.5,
+    "coverage@10": 5
+  },
+  "diagnostics": {
+    "num_users": 4,
+    "evaluated_users": 4,
+    "skipped_users": 0,
+    "average_predictions_before_filtering": 2.5,
+    "average_predictions_after_filtering": 1.25,
+    "duplicate_predictions": 3,
+    "duplicate_prediction_rate": 0.3,
+    "seen_items_filtered": 2,
+    "seen_filtered_rate": 0.2,
+    "filter_seen": true
+  }
+}

@@ -25,7 +25,7 @@ The model generates Semantic ID tokens. Active SID-v2 uses four levels:
 The active codebook sizes are:
 
 ```text
-[1024, 512, 256, 128]
+[512, 256, 128, 64]
 ```
 
 Generation uses trie-constrained decoding, so only SID token sequences present
@@ -84,3 +84,49 @@ Validation and test configs are intentionally separate:
 
 `make eval` does not choose a split implicitly. Use `make eval-val` or
 `make eval-test`.
+
+## Package-Native Metric Reports
+
+The package includes a CPU-safe command for recomputing item-level metrics from
+existing prediction artifacts:
+
+```bash
+python -m plum_ml1m.cli eval-report \
+  --config configs/evaluation_test.yaml \
+  --predictions data/processed/artifacts/evaluation/predictions.parquet \
+  --targets data/processed/artifacts/evaluation/targets.parquet \
+  --seen-history data/processed/artifacts/evaluation/seen_history.parquet \
+  --output reports/snapshots/example_test.metrics.json
+```
+
+This command does not train a model, download checkpoints, or run generation.
+It only loads ranked item predictions, targets, optional seen histories, and
+then computes metrics through the canonical `plum_ml1m.metrics` module.
+
+Supported prediction schemas:
+
+```text
+user_idx,target_item_idx,rank,predicted_item_idx
+```
+
+or:
+
+```text
+user_idx,target_item_idx,predicted_item_indices
+```
+
+`predicted_item_indices` may be a JSON/list-like field. The legacy
+`candidates` column name is accepted as an alias because several experiment
+scripts already export compact item-level predictions with that name. Targets
+may also be provided separately with `--targets`. Seen histories may be
+supplied as `seen_item_indices`, row-wise `seen_item_idx`, or row-wise
+`item_idx`.
+Raw SID-token generations are not scored directly by this command; they should
+first be decoded to original `item_idx` candidates through the canonical trie
+decoder and then exported with one of the item-level schemas above.
+
+The evaluator deduplicates candidates per user, filters seen items before
+top-K truncation when the config enables seen filtering, and writes a compact
+JSON report with metrics plus diagnostics. Heavy prediction dumps are not
+committed; small scalar metric reports may be committed under
+`reports/snapshots/`.

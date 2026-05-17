@@ -27,7 +27,7 @@ The active protocol is SID-v2.
 | Embeddings | `Qwen/Qwen3-Embedding-4B`, 2560d |
 | SID model | RQ-VAE |
 | SID levels | 4 |
-| Codebook sizes | `[1024, 512, 256, 128]` |
+| Codebook sizes | `[512, 256, 128, 64]` |
 | Collision policy | expand SID bucket to candidate items, then filter seen/duplicates |
 | CPT behavior source | train split only |
 | SFT target | next watched item |

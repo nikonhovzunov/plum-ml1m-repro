@@ -8,6 +8,12 @@ from pathlib import Path
 
 from .artifacts import ArtifactManifest
 from .config import validate_config, validate_config_dir
+from .eval.diagnostics import (
+    DiagnosticSelection,
+    GenerativeDiagnosticsError,
+    build_generative_diagnostics_report,
+)
+from .eval.report import EvaluationReportError, build_evaluation_report
 from .paths import find_project_root, resolve_project_path
 from .smoke import run_smoke_test
 
@@ -63,7 +69,7 @@ def command_validate_artifacts(args: argparse.Namespace) -> int:
         return 0
     missing = manifest.validate_local(root=args.root)
     if missing:
-        _print_json({"status": "missing", "mode": "local", "missing": missing})
+        _print_json({"status": "missing", "mode": "local", "missing": missing, "errors": missing})
         return 2
     _print_json({"status": "ok", "mode": "local", "artifacts": len(manifest.artifacts)})
     return 0
@@ -71,6 +77,45 @@ def command_validate_artifacts(args: argparse.Namespace) -> int:
 
 def command_smoke_test(_args: argparse.Namespace) -> int:
     _print_json(run_smoke_test())
+    return 0
+
+
+def command_eval_report(args: argparse.Namespace) -> int:
+    try:
+        report = build_evaluation_report(
+            config_path=args.config,
+            predictions_path=args.predictions,
+            output_path=args.output,
+            targets_path=args.targets,
+            seen_history_path=args.seen_history,
+            run_id=args.run_id,
+        )
+    except EvaluationReportError as exc:
+        _print_json({"status": "error", "message": str(exc)})
+        return 2
+    _print_json({"status": "ok", "output": args.output, "metrics": report["metrics"]})
+    return 0
+
+
+def command_diagnostics_report(args: argparse.Namespace) -> int:
+    try:
+        report = build_generative_diagnostics_report(
+            input_path=args.input,
+            output_path=args.output,
+            run_id=args.run_id,
+            split=args.split,
+            trie_constrained=args.trie_constrained,
+            candidate_universe_size=args.candidate_universe_size,
+            selection=DiagnosticSelection(
+                index=args.index,
+                beam_size=args.beam_size,
+                num_return_sequences=args.num_return_sequences,
+            ),
+        )
+    except GenerativeDiagnosticsError as exc:
+        _print_json({"status": "error", "message": str(exc)})
+        return 2
+    _print_json({"status": "ok", "output": args.output, "diagnostics": report})
     return 0
 
 
@@ -120,6 +165,27 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--notebook")
     evaluate.add_argument("--execute", action="store_true")
     evaluate.set_defaults(func=command_stage("evaluate"))
+
+    eval_report = sub.add_parser("eval-report")
+    eval_report.add_argument("--config", required=True)
+    eval_report.add_argument("--predictions", required=True)
+    eval_report.add_argument("--output", required=True)
+    eval_report.add_argument("--targets")
+    eval_report.add_argument("--seen-history")
+    eval_report.add_argument("--run-id")
+    eval_report.set_defaults(func=command_eval_report)
+
+    diagnostics = sub.add_parser("diagnostics-report")
+    diagnostics.add_argument("--input", required=True)
+    diagnostics.add_argument("--output", required=True)
+    diagnostics.add_argument("--run-id")
+    diagnostics.add_argument("--split")
+    diagnostics.add_argument("--index", type=int)
+    diagnostics.add_argument("--beam-size", type=int)
+    diagnostics.add_argument("--num-return-sequences", type=int)
+    diagnostics.add_argument("--trie-constrained", action="store_true", default=None)
+    diagnostics.add_argument("--candidate-universe-size", type=int)
+    diagnostics.set_defaults(func=command_diagnostics_report)
 
     return parser
 

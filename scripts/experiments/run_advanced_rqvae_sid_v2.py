@@ -54,7 +54,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--latent-dim", type=int, default=256)
     parser.add_argument("--branch-dim", type=int, default=256)
     parser.add_argument("--dropout", type=float, default=0.10)
-    parser.add_argument("--codebook-sizes", default="1024,512,256,128")
+    parser.add_argument("--codebook-sizes", default="512,256,128,64")
     parser.add_argument("--window-size", type=int, default=20)
     parser.add_argument("--distance-decay", type=float, default=0.85)
     parser.add_argument("--min-rating", type=float, default=4.0)

@@ -1,0 +1,55 @@
+{
+  "run_id": "content_knn_test",
+  "method": "Content KNN with Qwen content",
+  "method_family": "baseline",
+  "split": "test",
+  "dataset": "MovieLens-1M",
+  "git_commit": "3cde9ca",
+  "source": {
+    "script_or_notebook": "scripts/experiments/qwen4b_embedding_knn_sweep.py",
+    "config": null,
+    "source_local_path": "reports/embedding_knn_qwen4b_v2/concat_meta_description_w16_all_seen/best.json",
+    "source_available_in_git": false,
+    "note": "Scalar metrics copied from the local JSON artifact; full predictions are not committed."
+  },
+  "protocol": {
+    "context_source": "train+val",
+    "seen_filter_scope": "all_prior_user_history",
+    "target_policy": "next held-out test item",
+    "candidate_universe": "MovieLens-1M item_idx universe",
+    "id_space": "original_item_idx",
+    "k_values": [1, 5, 10, 20]
+  },
+  "model": {
+    "base_model": "Qwen/Qwen3-Embedding-4B",
+    "adapter": null,
+    "sid_protocol": null,
+    "notes": "KNN over one unweighted concatenated metadata+overview vector per movie; history window 16."
+  },
+  "metrics": {
+    "recall@1": 0.016887417218543047,
+    "recall@5": 0.041390728476821195,
+    "recall@10": 0.06754966887417219,
+    "recall@20": 0.10248344370860928,
+    "ndcg@10": 0.0373847053841035,
+    "mrr@10": 0.028372818774308816,
+    "coverage@10": 1170
+  },
+  "diagnostics": {
+    "n": 6040,
+    "representation": "concat",
+    "history_window": 16,
+    "alpha": 0.8,
+    "rating_mode": "none",
+    "aggregator": "sum",
+    "avg_candidates": 100.0
+  },
+  "artifact_policy": {
+    "predictions_committed": false,
+    "checkpoints_committed": false,
+    "large_artifacts_committed": false
+  },
+  "limitations": [
+    "This is a non-sequential content-control baseline over Qwen content vectors, not a collaborative recommender."
+  ]
+}

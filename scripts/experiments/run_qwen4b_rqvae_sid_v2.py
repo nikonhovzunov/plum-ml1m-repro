@@ -88,7 +88,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--branch-dim", type=int, default=320)
     parser.add_argument("--hidden-dims", default="640,640")
     parser.add_argument("--decoder-hidden-dims", default="640,640")
-    parser.add_argument("--codebook-sizes", default="1024,512,256,128")
+    parser.add_argument("--codebook-sizes", default="512,256,128,64")
     parser.add_argument("--dropout", type=float, default=0.10)
     parser.add_argument("--max-params", type=int, default=15_000_000)
     parser.add_argument("--window-size", type=int, default=20)

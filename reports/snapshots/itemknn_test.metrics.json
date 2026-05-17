@@ -1,0 +1,56 @@
+{
+  "run_id": "itemknn_test",
+  "method": "Behavioral ItemKNN BM25-cosine",
+  "method_family": "baseline",
+  "split": "test",
+  "dataset": "MovieLens-1M",
+  "git_commit": "3cde9ca",
+  "source": {
+    "script_or_notebook": "scripts/experiments/itemknn_behavior_sweep.py",
+    "config": null,
+    "source_local_path": "reports/itemknn_behavior_v2/test_w16_all_seen_best_val_selected/best.json",
+    "source_available_in_git": false,
+    "note": "Scalar metrics copied from the local JSON artifact; full predictions are not committed."
+  },
+  "protocol": {
+    "context_source": "train+val",
+    "seen_filter_scope": "all_prior_user_history",
+    "target_policy": "next held-out test item",
+    "candidate_universe": "MovieLens-1M item_idx universe",
+    "id_space": "original_item_idx",
+    "k_values": [1, 5, 10, 20]
+  },
+  "model": {
+    "base_model": null,
+    "adapter": null,
+    "sid_protocol": null,
+    "notes": "BM25-cosine behavioral ItemKNN over MovieLens interactions; history window 16."
+  },
+  "metrics": {
+    "recall@1": 0.04271523178807947,
+    "recall@5": 0.12682119205298012,
+    "recall@10": 0.19072847682119207,
+    "recall@20": 0.2716887417218543,
+    "ndcg@10": 0.10562565083267521,
+    "mrr@10": 0.07981945758435825,
+    "coverage@10": 1788
+  },
+  "diagnostics": {
+    "n": 6040,
+    "similarity": "bm25_cosine",
+    "similarity_source": "train+val",
+    "history_window": 16,
+    "alpha": 0.8,
+    "rating_mode": "none",
+    "aggregator": "top3",
+    "avg_candidates": 100.0
+  },
+  "artifact_policy": {
+    "predictions_committed": false,
+    "checkpoints_committed": false,
+    "large_artifacts_committed": false
+  },
+  "limitations": [
+    "This is an adapted ItemKNN sweep over MovieLens interactions, selected by validation protocol, not a full recommender benchmark."
+  ]
+}
