@@ -12,7 +12,7 @@ test:
 
 lint:
 	$(PYTHON) -m ruff check src tests scripts
-	$(PYTHON) -m compileall -q src tests
+	$(PYTHON) -m compileall -q src tests scripts
 
 format-check:
 	$(PYTHON) -m ruff format --check src tests scripts
@@ -55,4 +55,4 @@ eval-test:
 	$(PYTHON) -m plum_ml1m.cli evaluate --config configs/evaluation_test.yaml
 
 clean-generated:
-	$(PYTHON) -c "import shutil, pathlib; [shutil.rmtree(p, ignore_errors=True) for p in [pathlib.Path('.pytest_cache'), pathlib.Path('.ruff_cache')]]"
+	$(PYTHON) -c "import shutil, pathlib; [shutil.rmtree(p, ignore_errors=True) for p in [pathlib.Path('.pytest_cache'), pathlib.Path('.ruff_cache')]]; [shutil.rmtree(p, ignore_errors=True) for p in pathlib.Path('.').rglob('__pycache__')]"

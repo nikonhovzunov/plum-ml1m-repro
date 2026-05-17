@@ -9,9 +9,10 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+import importlib
 import json
-import math
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -20,7 +21,7 @@ import pandas as pd
 import torch
 from peft import PeftModel
 from tqdm.auto import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
@@ -33,9 +34,15 @@ def find_root(start: Path) -> Path:
 
 
 ROOT = find_root(Path.cwd())
-RUN_NAME = "sft_qwen3_4b_base_sid_v2_next_watch_w16_pat2_v1"
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+evaluate_rankings = importlib.import_module("plum_ml1m.metrics").evaluate_rankings
+
+RUN_NAME = "sft_qwen3_4b_qlora32_sid_v2_next_watch_w16_allseen_pat3_v1"
 BASE_CPT_DIR = (
-    ROOT / "data/processed/artifacts/cpt_qwen3_4b_base_sid_v2_plum_curriculum_v1/final_merged"
+    ROOT / "data/processed/artifacts/cpt_qwen3_4b_base_sid_v2_plum_curriculum_qlora32_v1/final_merged"
 )
 OUTPUT_DIR = ROOT / "data/processed/artifacts" / RUN_NAME
 BEST_ADAPTER_DIR = OUTPUT_DIR / "best_adapter"
@@ -76,12 +83,29 @@ def load_tokenizer(path: Path):
         return AutoTokenizer.from_pretrained(path)
 
 
-def load_causal_lm(path: Path, dtype: torch.dtype):
-    kwargs = {"dtype": dtype, "local_files_only": True, "trust_remote_code": False}
+def load_causal_lm(path: Path, dtype: torch.dtype, load_in_4bit: bool = False):
+    kwargs = {"local_files_only": True, "trust_remote_code": False}
+    if load_in_4bit:
+        kwargs.update(
+            {
+                "quantization_config": BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=dtype,
+                    bnb_4bit_use_double_quant=True,
+                ),
+                "device_map": {"": 0} if torch.cuda.is_available() else None,
+                "low_cpu_mem_usage": True,
+            }
+        )
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+    else:
+        kwargs["dtype"] = dtype
     try:
         return AutoModelForCausalLM.from_pretrained(path, **kwargs)
     except TypeError:
-        kwargs["torch_dtype"] = kwargs.pop("dtype")
+        if "dtype" in kwargs:
+            kwargs["torch_dtype"] = kwargs.pop("dtype")
         return AutoModelForCausalLM.from_pretrained(path, **kwargs)
 
 
@@ -95,26 +119,6 @@ def rating_token(rating):
 
 def user_tokens(row):
     return [f"<gen_{row.gender}>", f"<age_{int(row.age)}>", f"<occ_{int(row.occupation)}>"]
-
-
-def recall_at_k(candidates, target, k):
-    return float(int(int(target) in candidates[:k]))
-
-
-def ndcg_at_k(candidates, target, k):
-    target = int(target)
-    for rank, item in enumerate(candidates[:k], start=1):
-        if int(item) == target:
-            return 1.0 / math.log2(rank + 1)
-    return 0.0
-
-
-def mrr_at_k(candidates, target, k):
-    target = int(target)
-    for rank, item in enumerate(candidates[:k], start=1):
-        if int(item) == target:
-            return 1.0 / rank
-    return 0.0
 
 
 def is_windows_pid_alive(pid: int) -> bool:
@@ -155,10 +159,11 @@ def main() -> None:
     parser.add_argument("--run-name", default=RUN_NAME)
     parser.add_argument("--base-cpt-dir", type=Path, default=BASE_CPT_DIR)
     parser.add_argument("--adapter-dir", type=Path, default=BEST_ADAPTER_DIR)
+    parser.add_argument("--load-in-4bit", action="store_true")
     parser.add_argument(
         "--seen-filter-scope",
         choices=["prompt", "all"],
-        default="prompt",
+        default="all",
         help=(
             "prompt filters only the visible prompt history; all filters every item "
             "seen before the validation/test target."
@@ -339,13 +344,15 @@ def main() -> None:
     if args.eval_batch_size <= 0:
         raise ValueError("--eval-batch-size must be positive")
 
-    model = load_causal_lm(base_cpt_dir, dtype)
+    model = load_causal_lm(base_cpt_dir, dtype, load_in_4bit=args.load_in_4bit)
     model.resize_token_embeddings(len(tokenizer), mean_resizing=False)
     model.config.bos_token_id = tokenizer.bos_token_id
     model.config.eos_token_id = tokenizer.eos_token_id
     model.config.pad_token_id = tokenizer.pad_token_id
     model.config.use_cache = True
-    model = PeftModel.from_pretrained(model, adapter_dir).to(device)
+    model = PeftModel.from_pretrained(model, adapter_dir)
+    if not args.load_in_4bit:
+        model = model.to(device)
     model.eval()
 
     def trie_allowed_tokens(prompt_length):
@@ -532,7 +539,18 @@ def main() -> None:
             "num_return_sequences": int(num_return_sequences),
             "seconds": time.time() - started,
         }
-        recommended_by_k = {k: set() for k in [1, 5, 10, 20, 50, 100]}
+        metrics.update(
+            evaluate_rankings(
+                [
+                    {
+                        "target_item_idx": int(rec["target_item_idx"]),
+                        "candidates": rec["candidates"],
+                    }
+                    for rec in records
+                ],
+                k_values=(1, 5, 10, 20, 50, 100),
+            )
+        )
         sums = {
             "generated": 0,
             "invalid": 0,
@@ -542,7 +560,6 @@ def main() -> None:
             "unique_filtered": 0,
         }
         for rec in records:
-            target = int(rec["target_item_idx"])
             candidates = rec["candidates"]
             raw_items = rec["raw_items"]
             raw_unique = set(raw_items)
@@ -552,22 +569,8 @@ def main() -> None:
             sums["raw_valid"] += len(raw_items)
             sums["raw_duplicate_valid"] += max(0, len(raw_items) - len(raw_unique))
             sums["unique_filtered"] += len(candidates)
-            for k in [1, 5, 10, 20, 50, 100]:
-                metrics[f"recall@{k}"] = metrics.get(f"recall@{k}", 0.0) + recall_at_k(
-                    candidates, target, k
-                )
-                metrics[f"ndcg@{k}"] = metrics.get(f"ndcg@{k}", 0.0) + ndcg_at_k(
-                    candidates, target, k
-                )
-                metrics[f"mrr@{k}"] = metrics.get(f"mrr@{k}", 0.0) + mrr_at_k(candidates, target, k)
-                recommended_by_k[k].update(candidates[:k])
 
         n = max(len(records), 1)
-        for key in list(metrics):
-            if key.startswith(("recall@", "ndcg@", "mrr@")):
-                metrics[key] = metrics[key] / n
-        for k, items in recommended_by_k.items():
-            metrics[f"coverage@{k}"] = len(items)
 
         generated = max(sums["generated"], 1)
         raw_valid = max(sums["raw_valid"], 1)

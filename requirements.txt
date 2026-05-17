@@ -8,12 +8,11 @@ tqdm
 # Modeling
 torch
 scikit-learn
+scipy
 
 # Experiment analysis / notebooks
 matplotlib
 seaborn
-catboost
-iterative-stratification
 
 # PLUM-style CPT / SFT
 transformers
@@ -25,4 +24,5 @@ sentence-transformers
 
 # Jupyter ergonomics
 ipykernel
-ipywidgets
+nbclient
+nbformat

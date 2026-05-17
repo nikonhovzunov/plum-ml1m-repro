@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
@@ -54,7 +54,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--latent-dim", type=int, default=256)
     parser.add_argument("--branch-dim", type=int, default=256)
     parser.add_argument("--dropout", type=float, default=0.10)
-    parser.add_argument("--codebook-sizes", default="2048,1024,512,256")
+    parser.add_argument("--codebook-sizes", default="1024,512,256,128")
     parser.add_argument("--window-size", type=int, default=20)
     parser.add_argument("--distance-decay", type=float, default=0.85)
     parser.add_argument("--min-rating", type=float, default=4.0)

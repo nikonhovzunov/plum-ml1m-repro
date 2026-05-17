@@ -1,23 +1,19 @@
 # PLUM-style Generative Recommendation on MovieLens-1M
 
-This repository contains a PLUM-style reproduction/adaptation for MovieLens-1M. The goal is to study a generative recommendation pipeline based on Semantic IDs, continued pre-training, supervised fine-tuning, and constrained decoding.
+This project is a PLUM-style adaptation for MovieLens-1M. It studies how Semantic IDs, continued pre-training, supervised fine-tuning, and constrained decoding can be used for next-item recommendation.
 
-This is **not** a SOTA claim. The current focus is reproducibility, inspectability, and a clean engineering surface for review. A simple global Popularity sanity baseline is included only to anchor the reported generative results; this repository is not a broad recommender benchmark suite.
+This is **not** a SOTA claim. The main goal is to keep the pipeline clear, reproducible, and easy to review. A few simple and neural baselines are included only to compare results under the same split and evaluation protocol.
 
 ## What Is Implemented
 
-1. MovieLens-1M chronological leave-one-out split handling.
-2. Movie metadata enrichment with title, year, genres, and plot overviews.
-3. Content embeddings for item metadata and descriptions.
-4. RQ-VAE Semantic ID training for the active SID-v2 protocol.
-5. LoRA CPT on SID metadata and train-only behavior.
-6. LoRA SFT for next watched item generation.
-7. Trie-constrained SID decoding.
-8. SID-to-original-item mapping with collision expansion and seen-item filtering.
-9. Recall/NDCG/MRR/Coverage evaluation.
-10. Lightweight global Popularity sanity baseline.
-11. Qwen3 no-CPT direct SFT ablation for measuring the value of CPT grounding.
-12. Lightweight configs, tests, CLI, Makefile, docs, and CI.
+- Chronological MovieLens-1M preprocessing and leave-one-out splits.
+- Movie metadata with title, year, genres, and audited plot overviews.
+- Content embeddings, RQ-VAE Semantic IDs, and SID-v2 assignment tables.
+- Qwen3 CPT/SFT experiments with LoRA and QLoRA adapters.
+- Trie-constrained SID decoding with SID-to-item mapping, collision handling, and seen-item filtering.
+- Recall, NDCG, MRR, and Coverage evaluation.
+- Popularity, content KNN, ItemKNN, BERT4Rec, and SASRec comparison runs under the same protocol.
+- Configs, tests, CLI commands, Makefile targets, docs, and CI checks.
 
 ## Active Protocol
 
@@ -41,7 +37,7 @@ The active protocol is SID-v2.
 
 ## Reported Metrics
 
-The metrics below are preserved from existing experiment outputs. The Qwen3 test rows and Popularity sanity baseline were produced by current train+val -> test runs and are reported as actual held-out evaluations, not as manual edits. The no-CPT ablation is intentionally listed separately because it was measured on a 256-user validation sample, not on the full validation or test split.
+The metrics below are preserved from existing experiment outputs. Qwen3-4B SID-v2, Popularity, content KNN, behavioral ItemKNN, BERT4Rec, and SASRec rows were produced by downstream train+val -> test runs and are reported as actual held-out evaluations, not as manual edits. In the generative Qwen rows, CPT uses the active train-only corpus and train+val refers to the SFT/evaluation context. The no-CPT ablation is listed in the validation block because it was evaluated on the full validation split only and was not promoted to held-out test reporting.
 
 Validation runs used for protocol selection:
 
@@ -49,26 +45,34 @@ Validation runs used for protocol selection:
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | SID-v1 first retrieval attempt | GPT-2 S weak-CPT SFT, no descriptions | val 6040 | - | - | 0.0253 | - | - | - | discarded |
 | SID-v2 GPT2 reference | GPT2-S CPT + SFT | val 6040 | 0.0336 | 0.1075 | 0.1462 | 0.0836 | 0.0643 | 1185 | working internal reference |
-| SID-v2 Qwen w12 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 12 | val 6040 | 0.0598 | 0.1657 | 0.2318 | 0.1348 | 0.1051 | 1924 | strong validation run |
-| SID-v2 Qwen w12/10/8 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, mixed windows | val 6040 | 0.0512 | 0.1455 | 0.2194 | 0.1222 | 0.0928 | 2076 | below w12 |
-| SID-v2 Qwen w16 | Qwen2.5-3B CPT-LoRA merged checkpoint + SFT-LoRA, window 16 | val 6040 | 0.0579 | 0.1623 | 0.2397 | 0.1358 | 0.1042 | 1940 | selected protocol |
-| SID-v2 Qwen3 w16 | Qwen3-4B CPT-LoRA merged checkpoint + SFT-LoRA, window 16 | val 6040 | 0.0601 | 0.1697 | 0.2522 | 0.1424 | 0.1091 | 2045 | strongest validation run |
+| SID-v2 Qwen3 SFT-only w16 | Qwen3-4B Base + SFT-LoRA, no CPT, window 16, best epoch 17 | val 6040 | 0.0366 | 0.1151 | 0.1747 | 0.0954 | 0.0713 | 1470 | no-CPT ablation |
+| SID-v2 Qwen3 QLoRA32 w16 | Qwen3-4B CPT-QLoRA32 merged checkpoint + SFT-QLoRA32, window 16, best epoch 3 | val 6040 | 0.0646 | 0.1876 | 0.2707 | 0.1538 | 0.1182 | 2173 | strongest generative validation run |
 
-Qwen3 SFT-only ablation on a fixed 256-user validation sample:
+Qwen3 SFT-only ablation:
 
-This run measures how far direct SFT can go without a separate CPT grounding stage. It eventually learns useful SID recommendations, but the validation curve is slower and less stable than the CPT-grounded setup. The best sample checkpoint reaches `Recall@10 = 0.1992`; this ablation has not been promoted to the full validation or held-out test table.
+This run measures how far direct SFT can go without a separate CPT grounding stage. It eventually learns useful SID recommendations, but the validation curve is slower and less stable than the CPT-grounded setup. On the full validation split, the best SFT-only checkpoint reaches `Recall@10 = 0.1747`; the CPT-grounded QLoRA32 run reaches `Recall@10 = 0.2707` under the same full-validation, all-history seen-filtering protocol.
 
-![Qwen3 SFT-only validation metrics](docs/assets/qwen3_sft_only_validation_recall_ndcg_epochs_1_18.png)
+![Qwen3 SFT-only validation metrics](docs/assets/qwen3_sft_only_validation_metrics_clean.png)
+
+Plot details: Qwen3-4B Base was fine-tuned directly with SFT-LoRA, without a CPT grounding stage. The curve is the epoch-monitoring validation sample, not the full validation table: 256 validation users, history window 16, SID-v2 targets, target-only next-SID loss, trie-constrained decoding, and metrics computed over original item IDs after SID-to-item mapping.
 
 Train+val to held-out test:
 
-| Protocol | Train source | Seen filtering | Test users | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 | Status |
+The chart summarizes the main held-out test comparison by Recall@10.
+
+![Held-out test Recall@10 comparison](docs/assets/heldout_test_recall10_comparison_clean.png)
+
+Plot details: all rows use the same MovieLens-1M chronological split, train+val context where applicable, and all-prior-user-history seen filtering. Sequence-based methods use a history window of 16 items. Content KNN ranks original items using one concatenated metadata + overview vector per movie. Behavioral ItemKNN uses only MovieLens interactions. BERT4Rec and SASRec use item IDs plus the same projected content vector as an additional item modality. The Qwen3-4B rows use SID-v2 trie-constrained decoding; LoRA16 and QLoRA32 denote the adapter setup used for CPT and SFT.
+
+| Protocol | Fit / context source | Seen filtering | Test users | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 | Status |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | Global Popularity | train + val | all prior user history | 6040 | 0.0056 | 0.0202 | 0.0363 | 0.0178 | 0.0123 | 199 | sanity baseline |
-| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 12, 3 epochs | train + val | prompt window | 6040 | 0.0551 | 0.1507 | 0.2247 | 0.1280 | 0.0986 | 1917 | earlier test reference |
-| Qwen2.5-3B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 1 epoch | train + val | prompt window | 6040 | 0.0553 | 0.1576 | 0.2318 | 0.1312 | 0.1006 | 1929 | previous selected protocol |
-| Qwen3-4B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 2 epochs | train + val | prompt window | 6040 | 0.0545 | 0.1583 | 0.2336 | 0.1319 | 0.1010 | 2033 | diagnostic window-only filter |
-| Qwen3-4B CPT-LoRA + SFT-LoRA + SID-v2, window 16, 2 epochs | train + val | all prior user history | 6040 | 0.0626 | 0.1765 | 0.2525 | 0.1451 | 0.1123 | 2108 | current main held-out result |
+| Content KNN | train + val context | all prior user history | 6040 | 0.0169 | 0.0414 | 0.0675 | 0.0374 | 0.0284 | 1170 | content sanity baseline |
+| Behavioral ItemKNN | train + val interactions | all prior user history | 6040 | 0.0427 | 0.1268 | 0.1907 | 0.1056 | 0.0798 | 1788 | collaborative sanity baseline |
+| Qwen3-4B LoRA16 | train-only CPT, train + val SFT | all prior user history | 6040 | 0.0626 | 0.1765 | 0.2525 | 0.1451 | 0.1123 | 2108 | previous generative SID run |
+| Qwen3-4B QLoRA32 | train-only CPT, train + val SFT | all prior user history | 6040 | 0.0619 | 0.1755 | 0.2550 | 0.1450 | 0.1116 | 2143 | strongest generative SID result |
+| BERT4Rec | train + val | all prior user history | 6040 | 0.0861 | 0.2166 | 0.3066 | 0.1823 | 0.1443 | 2842 | neural sequential baseline |
+| SASRec | train + val | all prior user history | 6040 | 0.0844 | 0.2250 | 0.3104 | 0.1835 | 0.1446 | 2455 | strongest held-out test baseline |
 
 Coverage@10 is the number of unique original items recommended across users. Invalid SID rate is not listed in the comparison table because the reported runs use trie-constrained decoding over valid item SID sequences.
 
@@ -80,7 +84,7 @@ Evaluation is item-level, not SID-level:
 2. A trie restricts generation to valid item SID sequences.
 3. Each generated SID is mapped back to one or more original `item_idx` values.
 4. SID collisions are expanded.
-5. Already seen items and duplicate recommendations are removed. Current main test reporting filters all items watched before the target timestamp; earlier diagnostic rows may use prompt-window-only filtering and are marked in the table.
+5. Already seen items and duplicate recommendations are removed. Current main test reporting filters all items watched before the target timestamp.
 6. Recall@K, NDCG@K, MRR@K, and Coverage@K are computed over original item IDs.
 
 Formulas and tests are documented in [docs/EVALUATION.md](docs/EVALUATION.md).
@@ -101,6 +105,17 @@ make lint
 make config-check
 make artifacts-check-schema
 make smoke-test
+```
+
+If `make` is not available, run the same checks directly:
+
+```bash
+python -m pytest -m "not gpu and not slow"
+python -m ruff check src tests scripts
+python -m compileall -q src tests scripts
+python -m plum_ml1m.cli validate-config --config-dir configs
+python -m plum_ml1m.cli validate-artifacts --manifest configs/artifact_manifest.yaml --mode schema
+python -m plum_ml1m.cli smoke-test
 ```
 
 The commands above do not train models or download large checkpoints.
@@ -135,11 +150,17 @@ tests/                   lightweight tests for protocol and evaluation logic
 
 Large generated artifacts are intentionally not tracked. See [docs/ARTIFACTS.md](docs/ARTIFACTS.md).
 
+Notebook and experiment-script navigation:
+
+- [notebooks/README.md](notebooks/README.md)
+- [scripts/experiments/README.md](scripts/experiments/README.md)
+
 ## Documentation
 
 - [Quickstart](docs/QUICKSTART.md)
 - [Reproduction](docs/REPRODUCTION.md)
 - [Pipeline](docs/PIPELINE.md)
+- [Results snapshot](docs/RESULTS.md)
 - [Evaluation](docs/EVALUATION.md)
 - [Artifacts](docs/ARTIFACTS.md)
 - [Environment](docs/ENVIRONMENT.md)

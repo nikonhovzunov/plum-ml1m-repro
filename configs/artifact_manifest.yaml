@@ -75,7 +75,7 @@ artifacts:
     expected_size_bytes: null
     sha256: null
     schema:
-      arrays: [meta_embeddings, description_embeddings]
+      arrays: [item_idx, meta, description]
     notes: Qwen text embeddings are large generated artifacts.
   - name: rqvae_sid_v2_best_checkpoint
     stage: train-sid
@@ -106,10 +106,10 @@ artifacts:
     schema:
       columns: [item_idx, sid_0, sid_1, sid_2, sid_3]
     notes: Active SID-v2 uses exactly four SID levels.
-  - name: qwen3_cpt_lora_adapter
+  - name: qwen3_cpt_qlora32_adapter
     stage: train-cpt
     kind: cpt_lora_adapter
-    path: data/processed/artifacts/cpt_qwen3_4b_base_sid_v2_plum_curriculum_v1/adapter
+    path: data/processed/artifacts/cpt_qwen3_4b_base_sid_v2_plum_curriculum_qlora32_v1/adapter
     required_for: [train-sft]
     produced_by: train-cpt
     consumed_by: [train-sft]
@@ -119,11 +119,11 @@ artifacts:
     expected_size_bytes: null
     sha256: null
     schema: {}
-    notes: LoRA adapter from Qwen3 CPT; generated locally.
-  - name: qwen3_sft_lora_adapter_w16
+    notes: QLoRA32 adapter from Qwen3 CPT; generated locally.
+  - name: qwen3_sft_qlora32_adapter_w16
     stage: train-sft
     kind: sft_lora_adapter
-    path: data/processed/artifacts/sft_qwen3_4b_base_sid_v2_next_watch_w16_pat2_v1/best_adapter
+    path: data/processed/artifacts/sft_qwen3_4b_qlora32_sid_v2_next_watch_w16_allseen_pat3_v1/best_adapter
     required_for: [evaluate]
     produced_by: train-sft
     consumed_by: [evaluate]
@@ -134,6 +134,20 @@ artifacts:
     sha256: null
     schema: {}
     notes: Validation-selected SFT adapter; not committed.
+  - name: qwen3_sft_qlora32_trainval_adapter_w16
+    stage: train-sft
+    kind: sft_lora_adapter
+    path: data/processed/artifacts/sft_qwen3_4b_qlora32_sid_v2_trainval_test_w16_e3_allseen_v1/final_adapter
+    required_for: [evaluate]
+    produced_by: train-sft
+    consumed_by: [evaluate]
+    safe_to_commit: false
+    exists_required_for_ci: false
+    expected_type: dir
+    expected_size_bytes: null
+    sha256: null
+    schema: {}
+    notes: Train+val SFT adapter used for held-out test evaluation; not committed.
   - name: trie_decoded_predictions
     stage: evaluate
     kind: predictions
@@ -152,7 +166,7 @@ artifacts:
   - name: final_metrics_report
     stage: evaluate
     kind: metrics_report
-    path: data/processed/artifacts/evaluation/metrics.json
+    path: data/processed/artifacts/evaluation/qwen3_qlora32_test_metrics.json
     required_for: [report]
     produced_by: evaluate
     consumed_by: [report]

@@ -8,8 +8,9 @@ use `plum-ml1m evaluate --config configs/evaluation_val.yaml` or
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
-import math
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -18,6 +19,21 @@ import torch
 from peft import PeftModel
 from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+
+def find_root(start: Path) -> Path:
+    root = start.resolve()
+    while not (root / "src").exists() and root.parent != root:
+        root = root.parent
+    return root
+
+
+ROOT = find_root(Path.cwd())
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+evaluate_rankings = importlib.import_module("plum_ml1m.metrics").evaluate_rankings
 
 
 def load_tokenizer(path: Path):
@@ -297,29 +313,12 @@ def main() -> None:
                 break
         return candidates, invalid, seen_generated, int(len(outputs))
 
-    def recall_at_k(candidates, target, k):
-        return float(int(int(target) in candidates[:k]))
-
-    def ndcg_at_k(candidates, target, k):
-        target = int(target)
-        for rank, item in enumerate(candidates[:k], start=1):
-            if int(item) == target:
-                return 1.0 / math.log2(rank + 1)
-        return 0.0
-
-    def mrr_at_k(candidates, target, k):
-        target = int(target)
-        for rank, item in enumerate(candidates[:k], start=1):
-            if int(item) == target:
-                return 1.0 / rank
-        return 0.0
-
-    metrics = {"split": f"val_full_best_w{args.eval_history_len}", "n": len(examples)}
     recommended = set()
     invalid = 0
     generated = 0
     seen_generated = 0
     candidate_counts = []
+    records = []
 
     for ex in tqdm(examples, desc=f"eval val_w{args.eval_history_len}"):
         candidates, inv, seen_gen, gen_count = generate_candidates(ex)
@@ -329,17 +328,10 @@ def main() -> None:
         invalid += inv
         generated += gen_count
         seen_generated += seen_gen
-        for k in [1, 5, 10]:
-            metrics[f"recall@{k}"] = metrics.get(f"recall@{k}", 0.0) + recall_at_k(
-                candidates, target, k
-            )
-            metrics[f"ndcg@{k}"] = metrics.get(f"ndcg@{k}", 0.0) + ndcg_at_k(candidates, target, k)
-            metrics[f"mrr@{k}"] = metrics.get(f"mrr@{k}", 0.0) + mrr_at_k(candidates, target, k)
+        records.append({"target_item_idx": target, "candidates": candidates})
 
-    n = max(len(examples), 1)
-    for key in list(metrics):
-        if key.startswith(("recall@", "ndcg@", "mrr@")):
-            metrics[key] = metrics[key] / n
+    metrics = {"split": f"val_full_best_w{args.eval_history_len}", "n": len(examples)}
+    metrics.update(evaluate_rankings(records, (1, 5, 10)))
     metrics["coverage@10"] = int(len(recommended))
     metrics["avg_candidates"] = float(np.mean(candidate_counts)) if candidate_counts else 0.0
     metrics["invalid_sid_rate"] = float(invalid / max(generated, 1))

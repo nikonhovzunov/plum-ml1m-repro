@@ -1,14 +1,15 @@
-name: qwen2_5_3b_sid_v2_cpt_curriculum
+name: qwen3_4b_sid_v2_cpt_qlora32_curriculum
 stage: train-cpt
 paths:
   train: data/processed/splits/train.parquet
   item_profiles: data/processed/item_features/qwen4b_audited_v1_item_profiles.parquet
   sid_array: runs/qwen4b_rqvae_sid_v2_plum/SIDs_best.npy
-  output_dir: data/processed/artifacts/cpt_qwen2_5_3b_base_sid_v2_plum_curriculum_v1
+  output_dir: data/processed/artifacts/cpt_qwen3_4b_base_sid_v2_plum_curriculum_qlora32_v1
 model:
-  base: Qwen/Qwen2.5-3B
-  adaptation: LoRA
-  lora_r: 16
+  base: Qwen/Qwen3-4B-Base
+  adaptation: QLoRA
+  lora_r: 32
+  quantization: nf4_4bit
 curriculum:
   synthetic_epochs: 15
   train_epochs: 1.0

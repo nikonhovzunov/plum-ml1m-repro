@@ -37,6 +37,9 @@ scripts/experiments/
 They are kept for research history. Current reproducibility checks should go
 through the package CLI and Makefile targets.
 
-Historical SID-v1 notebooks under `notebooks/sid_v1_legacy/` may contain
-five-level prototype SIDs. That is archival material only and is not the active
-SID-v2 protocol.
+Historical SID-v1 notebooks used a five-level prototype SID scheme. The heavy
+notebooks were removed from the public tree; `notebooks/sid_v1_legacy/README.md`
+keeps the context and points back to the active SID-v2 path.
+
+Old notebook drafts with broken markdown encoding or superseded local-only
+launch logic are intentionally not kept in the public path.

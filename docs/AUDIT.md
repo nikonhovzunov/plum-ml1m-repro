@@ -14,7 +14,7 @@ Current audit focus:
 
 Known intentional non-goals:
 
-- no external recommender baselines are added;
 - no SOTA claim is made;
-- large generated artifacts are not committed;
-- root `README.md` is frozen for this maintenance pass.
+- baseline rows are used only to anchor the current protocol, not to claim a
+  broad recommender benchmark;
+- generated heavy artifacts remain outside git.

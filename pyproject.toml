@@ -26,10 +26,12 @@ modeling = [
   "safetensors",
   "sentence-transformers",
   "scikit-learn",
+  "scipy",
 ]
 notebooks = [
   "ipykernel",
-  "ipywidgets",
+  "nbclient",
+  "nbformat",
   "matplotlib",
   "seaborn",
 ]

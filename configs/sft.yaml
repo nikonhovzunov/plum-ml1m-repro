@@ -1,19 +1,21 @@
-name: qwen2_5_3b_sid_v2_sft_w16
+name: qwen3_4b_sid_v2_sft_qlora32_w16
 stage: train-sft
 paths:
-  base_cpt: data/processed/artifacts/cpt_qwen2_5_3b_base_sid_v2_plum_curriculum_v1/final_merged
+  base_cpt: data/processed/artifacts/cpt_qwen3_4b_base_sid_v2_plum_curriculum_qlora32_v1/final_merged
   train: data/processed/splits/train.parquet
   val: data/processed/splits/val.parquet
   test: data/processed/splits/test.parquet
   sid_array: runs/qwen4b_rqvae_sid_v2_plum/SIDs_best.npy
-  output_dir: data/processed/artifacts/sft_qwen2_5_3b_sid_v2_next_watch_w16_pat2_v1
+  output_dir: data/processed/artifacts/sft_qwen3_4b_qlora32_sid_v2_next_watch_w16_allseen_pat3_v1
 task:
   target: next_watched_item
   history_window: 16
   target_only_loss: true
   filter_seen: true
+  seen_filter_scope: all_prior_user_history
 model:
-  adaptation: LoRA
-  lora_r: 16
+  adaptation: QLoRA
+  lora_r: 32
+  quantization: nf4_4bit
   beam_size: 20
   top_k: 10

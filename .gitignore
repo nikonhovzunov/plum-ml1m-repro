@@ -6,6 +6,9 @@ data/processed/
 runs/
 reports/
 outputs/
+local_archive/
+*.log
+*.tmp
 research/movie_overviews/data/
 research/movie_overviews/cache/*
 !research/movie_overviews/cache/.gitignore
@@ -16,6 +19,9 @@ lightning_logs/
 checkpoints/
 **/checkpoint-*/
 **/adapter_model.safetensors
+**/*.ckpt
+**/*.pt
+**/*.pth
 **/pytorch_model*.bin
 **/model*.safetensors
 **/*embeddings*.npz
@@ -38,6 +44,10 @@ __pycache__/
 *.pyo
 *.pyd
 *.egg-info/
+.venv/
+venv/
+env/
+.env
 
 # OS files
 .DS_Store

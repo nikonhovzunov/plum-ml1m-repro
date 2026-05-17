@@ -10,8 +10,8 @@ flowchart LR
     E --> F
     F --> G["CPT corpus"]
     C --> G
-    G --> H["CPT LoRA adapter / merged checkpoint"]
-    H --> I["SFT LoRA adapter"]
+    G --> H["CPT LoRA/QLoRA adapter / merged checkpoint"]
+    H --> I["SFT LoRA/QLoRA adapter"]
     I --> J["Trie-constrained SID decoding"]
     J --> K["SID-to-item mapping + seen filtering"]
     K --> L["Ranking metrics"]
@@ -30,7 +30,12 @@ The active Qwen CPT series uses a pre-built curriculum corpus:
 
 ## SFT task
 
-SFT is next watched item prediction. The model sees a fixed user history window and generates the target item SID. Loss is applied to target tokens only.
+SFT is next watched item prediction. The model sees a fixed user history window
+and generates the target item SID. Loss is applied to target tokens only.
+
+The current main Qwen3 run uses a window of `16` visible history items and
+filters recommendations against the user's full prior history during
+validation/test evaluation.
 
 ## Decoding
 

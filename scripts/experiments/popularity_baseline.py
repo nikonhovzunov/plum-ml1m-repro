@@ -8,13 +8,13 @@ filters every item the user watched before the test target.
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
+import sys
 import time
 from pathlib import Path
 
 import pandas as pd
-
-from plum_ml1m.metrics import evaluate_rankings
 
 
 def find_root(start: Path) -> Path:
@@ -25,6 +25,12 @@ def find_root(start: Path) -> Path:
 
 
 ROOT = find_root(Path.cwd())
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+evaluate_rankings = importlib.import_module("plum_ml1m.metrics").evaluate_rankings
+
 DEFAULT_OUTPUT = ROOT / "data/processed/artifacts/popularity_baseline_trainval_test_full_seen"
 K_VALUES = (1, 5, 10, 20, 50, 100)
 

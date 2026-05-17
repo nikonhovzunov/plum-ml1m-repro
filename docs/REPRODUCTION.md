@@ -2,7 +2,8 @@
 
 This repository is a PLUM-style MovieLens-1M reproduction/adaptation. The code
 path is designed to make the current protocol inspectable and testable; it does
-not claim SOTA and does not include external recommender baselines.
+not claim SOTA. Baseline rows are included only as protocol anchors under the
+same MovieLens-1M split, not as a broad recommender benchmark suite.
 
 ## Lightweight Checks
 
@@ -15,6 +16,17 @@ make artifacts-check-schema
 make smoke-test
 ```
 
+If `make` is unavailable, use:
+
+```bash
+python -m ruff check src tests scripts
+python -m compileall -q src tests scripts
+python -m pytest -m "not gpu and not slow"
+python -m plum_ml1m.cli validate-config --config-dir configs
+python -m plum_ml1m.cli validate-artifacts --manifest configs/artifact_manifest.yaml --mode schema
+python -m plum_ml1m.cli smoke-test
+```
+
 These checks validate package imports, SID schema, trie decoding, ranking
 metrics, config consistency, artifact manifest schema, and a tiny end-to-end
 evaluation fixture.
@@ -22,6 +34,10 @@ evaluation fixture.
 ## Full Pipeline Stages
 
 The heavy pipeline is local-artifact dependent:
+
+```bash
+python -m pip install -e ".[dev,modeling,notebooks]"
+```
 
 ```bash
 make prepare-data

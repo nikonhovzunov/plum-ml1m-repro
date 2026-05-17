@@ -1,6 +1,6 @@
-"""Legacy experimental Qwen4B RQ-VAE Semantic ID launcher.
+"""Qwen3-Embedding-4B RQ-VAE Semantic ID launcher.
 
-Not part of the canonical reproduction path. Kept for research history only.
+Local heavy launcher for the active SID-v2 RQ-VAE stage.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))

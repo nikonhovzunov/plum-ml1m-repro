@@ -46,8 +46,8 @@ def _require_bool(value: Any, label: str) -> None:
 
 
 def _validate_lora(section: dict[str, Any], prefix: str) -> None:
-    if section.get("adaptation") != "LoRA":
-        raise ConfigError(f"{prefix}.adaptation must be LoRA")
+    if section.get("adaptation") not in {"LoRA", "QLoRA"}:
+        raise ConfigError(f"{prefix}.adaptation must be LoRA or QLoRA")
     _require_positive_int(section.get("lora_r"), f"{prefix}.lora_r")
 
 

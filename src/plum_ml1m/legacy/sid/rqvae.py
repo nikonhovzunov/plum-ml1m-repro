@@ -8,6 +8,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from plum_ml1m.protocol import ACTIVE_SID_PROTOCOL
+
 
 @dataclass(frozen=True)
 class RQVAEConfig:
@@ -17,7 +19,7 @@ class RQVAEConfig:
     branch_hidden_dims: tuple[int, ...] = (512, 512)
     fusion_hidden_dims: tuple[int, ...] = (512, 512)
     decoder_hidden_dims: tuple[int, ...] = (512, 512)
-    codebook_sizes: tuple[int, ...] = (2048, 1024, 512, 256)
+    codebook_sizes: tuple[int, ...] = ACTIVE_SID_PROTOCOL.codebook_sizes
     dropout: float = 0.10
     use_description_mask: bool = True
     contrastive_dim: int = 128

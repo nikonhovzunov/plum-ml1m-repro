@@ -42,9 +42,10 @@ in deterministic order, then seen and duplicate items are filtered.
 
 ## Seen-Item Filtering
 
-Already-seen items are removed before top-K truncation. The current protocol
-uses the prompt history window as the default seen set unless an experiment
-explicitly documents stricter full-history filtering.
+Already-seen items are removed before top-K truncation. The current main
+validation/test protocol filters all items watched before the target timestamp.
+Older prompt-window-only rows are diagnostic only and must be explicitly marked
+as such.
 
 ## Duplicate Handling
 
