@@ -24,6 +24,10 @@ BLUE = "#5aa7ff"
 PURPLE = "#c99cff"
 VIOLET = "#9d6cf2"
 GRAY = "#9aa4ad"
+FIGSIZE = (13, 6.4)
+DPI = 180
+TITLE_FONTSIZE = 26
+TITLE_PAD = 18
 
 
 def read_json(path: str):
@@ -61,8 +65,13 @@ def setup_axes(ax):
 
 def save(fig, name: str):
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
-    fig.savefig(ASSET_DIR / name, dpi=180, bbox_inches="tight", facecolor=BG)
+    fig.tight_layout(pad=1.1)
+    fig.savefig(ASSET_DIR / name, dpi=DPI, facecolor=BG)
     plt.close(fig)
+
+
+def set_title(ax, title: str):
+    ax.set_title(title, color=TEXT, fontsize=TITLE_FONTSIZE, weight="bold", pad=TITLE_PAD)
 
 
 def plot_qlora_vs_fullft_dynamics():
@@ -75,9 +84,9 @@ def plot_qlora_vs_fullft_dynamics():
         "sft_qwen3_0_6b_fullft_cpt_fullft_sid_v2_next_watch_w16_allseen_pat3_v1/metrics.json"
     )
 
-    fig, ax = plt.subplots(figsize=(12, 5.2), facecolor=BG)
+    fig, ax = plt.subplots(figsize=FIGSIZE, facecolor=BG)
     setup_axes(ax)
-    ax.set_title("Qwen3-0.6B Validation Dynamics", color=TEXT, fontsize=26, weight="bold", pad=18)
+    set_title(ax, "Qwen3-0.6B Validation Dynamics")
 
     for rows, label, color, linestyle in [
         (qlora, "QLoRA32 Recall@10", GREEN, "-"),
@@ -134,9 +143,9 @@ def plot_qlora_vs_fullft_test():
     metrics = ["recall@1", "recall@5", "recall@10", "ndcg@10", "mrr@10"]
     labels = ["Recall@1", "Recall@5", "Recall@10", "NDCG@10", "MRR@10"]
 
-    fig, ax = plt.subplots(figsize=(12, 5.2), facecolor=BG)
+    fig, ax = plt.subplots(figsize=FIGSIZE, facecolor=BG)
     setup_axes(ax)
-    ax.set_title("Qwen3-0.6B Test Metrics", color=TEXT, fontsize=26, weight="bold", pad=18)
+    set_title(ax, "Qwen3-0.6B Test Metrics")
 
     x = range(len(metrics))
     width = 0.34
@@ -193,9 +202,9 @@ def plot_codebook_ablation():
         ),
     ]
 
-    fig, ax = plt.subplots(figsize=(12, 5.2), facecolor=BG)
+    fig, ax = plt.subplots(figsize=FIGSIZE, facecolor=BG)
     setup_axes(ax)
-    ax.set_title("SID Depth Ablation: Held-out Test Recall@10", color=TEXT, fontsize=26, weight="bold", pad=18)
+    set_title(ax, "SID Depth Ablation")
 
     labels = [r[0] for r in rows]
     values = [r[1]["recall@10"] for r in rows]
@@ -255,9 +264,9 @@ def plot_heldout_recall10():
     ]
     rows = sorted(rows, key=lambda row: row[1], reverse=True)
 
-    fig, ax = plt.subplots(figsize=(13, 6.4), facecolor=BG)
+    fig, ax = plt.subplots(figsize=FIGSIZE, facecolor=BG)
     setup_axes(ax)
-    ax.set_title("Held-out Test Recall@10", color=TEXT, fontsize=26, weight="bold", pad=18)
+    set_title(ax, "Held-out Test Recall@10")
 
     labels = [row[0] for row in rows]
     values = [row[1] for row in rows]
