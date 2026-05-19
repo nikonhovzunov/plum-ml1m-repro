@@ -1,0 +1,53 @@
+{
+  "run_id": "qwen3_0_6b_qlora32_test",
+  "method": "Qwen3-0.6B QLoRA32",
+  "method_family": "plum_style_generative",
+  "split": "test",
+  "dataset": "MovieLens-1M",
+  "git_commit": null,
+  "source": {
+    "script_or_notebook": "notebooks/sft/26_sft_qwen3_0_6b_qlora32_sid_v2_trainval_test_w16_bestepoch_allseen.ipynb",
+    "config": null,
+    "source_local_path": "data/processed/artifacts/sft_qwen3_0_6b_qlora32_sid_v2_trainval_test_w16_e1_allseen_v1/test_full_beam20_return20_all_seen_20260519_001408/beam_sweep_results.json",
+    "source_available_in_git": false,
+    "note": "Scalar metrics copied from the local JSON artifact; adapters and predictions are not committed."
+  },
+  "protocol": {
+    "context_source": "train+val",
+    "seen_filter_scope": "all_prior_user_history",
+    "target_policy": "next held-out test item",
+    "candidate_universe": "valid SID-v2 item trie mapped to MovieLens-1M item_idx",
+    "id_space": "original_item_idx",
+    "k_values": [1, 5, 10, 20]
+  },
+  "model": {
+    "base_model": "Qwen3-0.6B",
+    "adapter": "CPT-QLoRA32 + SFT-QLoRA32",
+    "sid_protocol": "SID-v2, 4 levels",
+    "notes": "Trie-constrained Semantic ID generation; beam20 return20."
+  },
+  "metrics": {
+    "recall@1": 0.061258278145695365,
+    "recall@5": 0.16622516556291392,
+    "recall@10": 0.2433774834437086,
+    "recall@20": 0.294205298013245,
+    "ndcg@10": 0.1394540857970636,
+    "mrr@10": 0.1078683117838747,
+    "coverage@10": 1776
+  },
+  "diagnostics": {
+    "n": 6040,
+    "beam_size": 20,
+    "num_return_sequences": 20,
+    "invalid_sid_rate": 0.0,
+    "raw_valid_rate": 1.0,
+    "seen_generated_rate": 0.2563576158940397,
+    "avg_unique_filtered_candidates": 14.872847682119206
+  },
+  "artifact_policy": {
+    "predictions_committed": false,
+    "checkpoints_committed": false,
+    "large_artifacts_committed": false
+  },
+  "limitations": []
+}

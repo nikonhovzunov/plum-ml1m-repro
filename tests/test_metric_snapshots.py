@@ -57,6 +57,7 @@ def test_metric_summary_csv_files_are_readable():
         "method",
         "method_family",
         "split",
+        "sid_codebooks",
         "recall@1",
         "recall@5",
         "recall@10",

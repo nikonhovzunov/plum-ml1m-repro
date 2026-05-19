@@ -47,27 +47,39 @@ Sequence-based methods use a history window of 16 items.
 
 ## Held-Out Test Rows
 
-| Snapshot | Method | Source artifact | Source in git? | Notes |
-|---|---|---|---|---|
-| `popularity_test.metrics.json` | Global Popularity | `data/processed/artifacts/popularity_baseline_trainval_test_full_seen/metrics.json` | no | Global train+val item frequency baseline. |
-| `content_knn_test.metrics.json` | Content KNN with Qwen content | `reports/embedding_knn_qwen4b_v2/concat_meta_description_w16_all_seen/best.json` | no | Concatenated metadata + overview Qwen content vectors. |
-| `itemknn_test.metrics.json` | Behavioral ItemKNN | `reports/itemknn_behavior_v2/test_w16_all_seen_best_val_selected/best.json` | no | BM25-cosine interaction KNN. |
-| `bert4rec_style_multimodal_test.metrics.json` | BERT4Rec-style + Qwen content | `reports/bert4rec_multimodal/bert4rec_qwen_concat_w16/metrics_test.json` | no | Masked last-position next-item Transformer with item ID plus projected Qwen content vector. |
-| `sasrec_multimodal_test.metrics.json` | SASRec-style + Qwen content | `reports/sasrec_multimodal/sasrec_qwen_concat_w16/metrics_test.json` | no | Causal next-item Transformer with item ID plus projected Qwen content vector. |
-| `qwen3_lora16_test.metrics.json` | Qwen3-4B LoRA16 | `data/processed/artifacts/sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch_v1/test_full_beam20_return20_strict_full_seen_b5/beam_sweep_results.json` | no | SID-v2 trie-constrained generative run. |
-| `qwen3_qlora32_test.metrics.json` | Qwen3-4B QLoRA32 | `data/processed/artifacts/sft_qwen3_4b_qlora32_sid_v2_trainval_test_w16_e3_allseen_v1/test_full_beam20_return20_all_seen_20260515_170416/beam_sweep_results.json` | no | Current QLoRA32 SID-v2 generative run. |
+| Snapshot | Method | SID codebooks | Source artifact | Source in git? | Notes |
+|---|---|---|---|---|---|
+| `popularity_test.metrics.json` | Global Popularity | n/a | `data/processed/artifacts/popularity_baseline_trainval_test_full_seen/metrics.json` | no | Global train+val item frequency baseline. |
+| `content_knn_test.metrics.json` | Content KNN with Qwen content | n/a | `reports/embedding_knn_qwen4b_v2/concat_meta_description_w16_all_seen/best.json` | no | Concatenated metadata + overview Qwen content vectors. |
+| `itemknn_test.metrics.json` | Behavioral ItemKNN | n/a | `reports/itemknn_behavior_v2/test_w16_all_seen_best_val_selected/best.json` | no | BM25-cosine interaction KNN. |
+| `bert4rec_style_multimodal_test.metrics.json` | BERT4Rec-style + Qwen content | n/a | `reports/bert4rec_multimodal/bert4rec_qwen_concat_w16/metrics_test.json` | no | Masked last-position next-item Transformer with item ID plus projected Qwen content vector. |
+| `sasrec_multimodal_test.metrics.json` | SASRec-style + Qwen content | n/a | `reports/sasrec_multimodal/sasrec_qwen_concat_w16/metrics_test.json` | no | Causal next-item Transformer with item ID plus projected Qwen content vector. |
+| `qwen3_0_6b_fullft_test.metrics.json` | Qwen3-0.6B full-FT | `[512, 256, 128, 64]` | `data/processed/artifacts/sft_qwen3_0_6b_fullft_cpt_fullft_sid_v2_trainval_test_w16_e7_allseen_v1/final_test_metrics.json` | no | SID-v2 trie-constrained generative run; local source records @1/@5/@10 metrics. |
+| `qwen3_0_6b_qlora32_test.metrics.json` | Qwen3-0.6B QLoRA32 | `[512, 256, 128, 64]` | `data/processed/artifacts/sft_qwen3_0_6b_qlora32_sid_v2_trainval_test_w16_e1_allseen_v1/test_full_beam20_return20_all_seen_20260519_001408/beam_sweep_results.json` | no | SID-v2 trie-constrained generative run. |
+| `qwen3_lora16_test.metrics.json` | Qwen3-4B LoRA16 | `[512, 256, 128, 64]` | `data/processed/artifacts/sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch_v1/test_full_beam20_return20_strict_full_seen_b5/beam_sweep_results.json` | no | SID-v2 trie-constrained generative run. |
+| `qwen3_qlora32_test.metrics.json` | Qwen3-4B QLoRA32 | `[512, 256, 128, 64]` | `data/processed/artifacts/sft_qwen3_4b_qlora32_sid_v2_trainval_test_w16_e3_allseen_v1/test_full_beam20_return20_all_seen_20260515_170416/beam_sweep_results.json` | no | Qwen3-4B QLoRA32 SID-v2 generative run. |
+
+## SID-Depth Ablation Rows
+
+The active SID-v2 assignment has four levels. The 3-level rows below are
+separate ablations and should not be read as a silent protocol replacement.
+
+| Snapshot | Method | SID codebooks | Source artifact | Source in git? | Notes |
+|---|---|---|---|---|---|
+| `qwen3_0_6b_qlora32_3levels_test.metrics.json` | Qwen3-0.6B QLoRA32, 3 SID levels | `[512, 256, 128]` | `data/processed/artifacts/sft_qwen3_0_6b_qlora32_sid_v2_3codebooks_trainval_test_w16_e3_allseen_v1/test_full_beam20_return20_all_seen_20260519_021421/beam_sweep_results.json` | no | 3-level SID-depth ablation. |
+| `qwen3_4b_qlora32_3levels_test.metrics.json` | Qwen3-4B QLoRA32, 3 SID levels | `[512, 256, 128]` | `data/processed/artifacts/sft_qwen3_4b_qlora32_sid_v2_3codebooks_trainval_test_w16_e1_allseen_v1/test_beam20_allseen/beam_sweep_results.json` | no | 3-level SID-depth ablation. |
 
 ## Validation Rows
 
 Validation rows are kept to document protocol selection and ablations. They are
 not held-out test claims.
 
-| Snapshot | Method | Status |
-|---|---|---|
-| `sid_v1_gpt2_weak_cpt_validation.metrics.json` | GPT-2 S weak-CPT SFT | Legacy discarded prototype; only documented Recall@10 is preserved. |
-| `sid_v2_gpt2_reference_validation.metrics.json` | GPT2-S CPT + SFT | Internal SID-v2 reference. |
-| `qwen3_sft_only_validation.metrics.json` | Qwen3-4B SFT-only | No-CPT ablation, validation-only. |
-| `qwen3_qlora32_validation.metrics.json` | Qwen3-4B QLoRA32 | Validation-selected generative SID run. |
+| Snapshot | Method | SID codebooks | Status |
+|---|---|---|---|
+| `sid_v1_gpt2_weak_cpt_validation.metrics.json` | GPT-2 S weak-CPT SFT | legacy SID-v1 | Legacy discarded prototype; only documented Recall@10 is preserved. |
+| `sid_v2_gpt2_reference_validation.metrics.json` | GPT2-S CPT + SFT | `[512, 256, 128, 64]` | Internal SID-v2 reference. |
+| `qwen3_sft_only_validation.metrics.json` | Qwen3-4B SFT-only | `[512, 256, 128, 64]` | No-CPT ablation, validation-only. |
+| `qwen3_qlora32_validation.metrics.json` | Qwen3-4B QLoRA32 | `[512, 256, 128, 64]` | Validation-selected generative SID run. |
 
 The no-CPT ablation is validation-only. No held-out test CPT-vs-no-CPT claim is
 made from that row unless a separate test artifact is produced later.

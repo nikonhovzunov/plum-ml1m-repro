@@ -9,7 +9,7 @@ python -m pip install -e ".[dev]"
 
 ## Baselines
 
-- `popularity_baseline.py`: global popularity sanity baseline.
+- `popularity_baseline.py`: global popularity baseline.
 - `qwen4b_embedding_knn_sweep.py`: content KNN over concatenated Qwen3-Embedding-4B metadata + overview embeddings.
 - `itemknn_behavior_sweep.py`: behavioral ItemKNN under the same split and seen-filtering protocol.
 - `bert4rec_multimodal_train.py`: BERT4Rec with item IDs plus projected Qwen3-4B content vectors.

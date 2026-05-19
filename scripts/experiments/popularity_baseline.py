@@ -1,4 +1,4 @@
-"""Popularity sanity baseline for MovieLens-1M PLUM-style splits.
+"""Popularity baseline for MovieLens-1M PLUM-style splits.
 
 This is a lightweight diagnostic baseline, not a benchmark suite. For the
 held-out test protocol it ranks items by global frequency in train+val and

@@ -159,6 +159,7 @@ def main() -> None:
     parser.add_argument("--run-name", default=RUN_NAME)
     parser.add_argument("--base-cpt-dir", type=Path, default=BASE_CPT_DIR)
     parser.add_argument("--adapter-dir", type=Path, default=BEST_ADAPTER_DIR)
+    parser.add_argument("--sid-array-path", type=Path, default=SID_ARRAY_PATH)
     parser.add_argument("--load-in-4bit", action="store_true")
     parser.add_argument(
         "--seen-filter-scope",
@@ -176,6 +177,7 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     base_cpt_dir = args.base_cpt_dir.resolve()
     adapter_dir = args.adapter_dir.resolve()
+    sid_array_path = args.sid_array_path.resolve()
     wait_pids = [int(x) for x in args.wait_pids.split(",") if x.strip()]
     wait_for_pids(wait_pids, args.wait_poll_seconds, args.output_dir)
 
@@ -199,7 +201,7 @@ def main() -> None:
         names=["user_id", "gender", "age", "occupation", "zip"],
         encoding="latin-1",
     )
-    sids = np.load(SID_ARRAY_PATH)
+    sids = np.load(sid_array_path)
 
     tokenizer = load_tokenizer(adapter_dir)
     if tokenizer.pad_token is None:
@@ -590,6 +592,7 @@ def main() -> None:
         "run_name": args.run_name,
         "base_cpt_dir": str(base_cpt_dir),
         "adapter_dir": str(adapter_dir),
+        "sid_array_path": str(sid_array_path),
         "split": args.split,
         "max_users": max_users,
         "examples": len(examples),

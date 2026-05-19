@@ -2,7 +2,8 @@
 
 The repository does not commit large generated artifacts: raw MovieLens files,
 processed datasets, embeddings, checkpoints, LoRA adapters, prediction dumps,
-and generated metric reports are local outputs.
+and full generated reports are local outputs. Compact scalar metric snapshots
+under `reports/snapshots/` are committed for auditability.
 
 The contract lives in:
 

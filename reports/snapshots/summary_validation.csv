@@ -1,5 +1,5 @@
-run_id,method,method_family,split,recall@1,recall@5,recall@10,recall@20,ndcg@10,mrr@10,coverage@10,seen_filter_scope,context_source,notes
-sid_v1_gpt2_weak_cpt_validation,GPT-2 S weak-CPT SFT,legacy_validation,validation,,,0.0253,,,,,unknown,train,Discarded first SID-v1 prototype; only Recall@10 is preserved in docs.
-sid_v2_gpt2_reference_validation,GPT2-S CPT + SFT,plum_style_generative,validation,0.0336,0.1075,0.1462,,0.0836,0.0643,1185,unknown,train,Internal SID-v2 GPT2 reference from documented validation table.
-qwen3_sft_only_validation,Qwen3-4B SFT-only,ablation,validation,0.0366,0.1151,0.1747,,0.0954,0.0713,1470,all_prior_user_history,train,Full validation no-CPT ablation; no held-out test CPT-vs-no-CPT claim.
-qwen3_qlora32_validation,Qwen3-4B QLoRA32,plum_style_generative,validation,0.0646,0.1876,0.2707,,0.1538,0.1182,2173,all_prior_user_history,train,CPT-QLoRA32 + SFT-QLoRA32 validation-selected run.
+run_id,method,method_family,split,sid_codebooks,recall@1,recall@5,recall@10,recall@20,ndcg@10,mrr@10,coverage@10,seen_filter_scope,context_source,notes
+sid_v1_gpt2_weak_cpt_validation,GPT-2 S weak-CPT SFT,legacy_validation,validation,legacy SID-v1,,,0.0253,,,,,unknown,train,Discarded first SID-v1 prototype; only Recall@10 is preserved in docs.
+sid_v2_gpt2_reference_validation,GPT2-S CPT + SFT,plum_style_generative,validation,"[512, 256, 128, 64]",0.0336,0.1075,0.1462,,0.0836,0.0643,1185,unknown,train,Internal SID-v2 GPT2 reference from documented validation table.
+qwen3_sft_only_validation,Qwen3-4B SFT-only,ablation,validation,"[512, 256, 128, 64]",0.0366,0.1151,0.1747,,0.0954,0.0713,1470,all_prior_user_history,train,Full validation no-CPT ablation; no held-out test CPT-vs-no-CPT claim.
+qwen3_qlora32_validation,Qwen3-4B QLoRA32,plum_style_generative,validation,"[512, 256, 128, 64]",0.0646,0.1876,0.2707,,0.1538,0.1182,2173,all_prior_user_history,train,CPT-QLoRA32 + SFT-QLoRA32 validation-selected run.

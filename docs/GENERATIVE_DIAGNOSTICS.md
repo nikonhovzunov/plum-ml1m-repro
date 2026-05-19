@@ -50,13 +50,17 @@ If an input file contains multiple rows, select one explicitly with `--index`
 or with `--beam-size` and `--num-return-sequences`. This avoids silently
 reporting the wrong beam-sweep configuration.
 
-## Diagnostic Table Template
+## Compact Diagnostic Table
 
-| Run | Split | Beam | Return seqs | Invalid SID rate | Seen generated rate | Duplicate valid rate | Avg unique filtered candidates |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Qwen3-4B LoRA16 | test | 20 | 20 | 0.0000 | 0.2237 | 0.0000 | 15.5262 |
-| Qwen3-4B QLoRA32 | test | 20 | 20 | 0.0000 | 0.2113 | 0.0000 | 15.7735 |
+| Run | SID codebooks | Split | Beam | Return seqs | Invalid SID rate | Seen generated rate | Duplicate valid rate | Avg unique filtered candidates |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Qwen3-4B LoRA16 | `[512, 256, 128, 64]` | test | 20 | 20 | 0.0000 | 0.2237 | 0.0000 | 15.5262 |
+| Qwen3-4B QLoRA32 | `[512, 256, 128, 64]` | test | 20 | 20 | 0.0000 | 0.2113 | 0.0000 | 15.7735 |
+| Qwen3-0.6B QLoRA32 | `[512, 256, 128, 64]` | test | 20 | 20 | 0.0000 | 0.2564 | 0.0000 | 14.8728 |
+| Qwen3-0.6B full-FT | `[512, 256, 128, 64]` | test | 20 | 20 | 0.0000 | 0.2322 | n/a | 9.5533 |
+| Qwen3-0.6B QLoRA32, 3 levels | `[512, 256, 128]` | test | 20 | 20 | 0.0000 | 0.2675 | 0.0000 | 14.6492 |
+| Qwen3-4B QLoRA32, 3 levels | `[512, 256, 128]` | test | 20 | 20 | 0.0000 | 0.2353 | 0.0000 | 15.2939 |
 
-The values above are copied from compact diagnostic snapshots generated from
-local `beam_sweep_results.json` files. The raw beam-sweep artifacts remain
-outside git.
+The values above are copied from compact snapshots generated from local
+`beam_sweep_results.json` or `final_test_metrics.json` files. The raw
+beam-sweep artifacts remain outside git.
