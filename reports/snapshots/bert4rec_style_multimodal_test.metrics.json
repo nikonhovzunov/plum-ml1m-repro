@@ -1,10 +1,17 @@
 {
   "run_id": "bert4rec_style_multimodal_test",
-  "method": "BERT4Rec-style + Qwen content",
+  "method": "BERT4Rec",
   "method_family": "neural_sequential_baseline",
   "split": "test",
   "dataset": "MovieLens-1M",
-  "git_commit": "3cde9ca",
+  "git_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+  "provenance": {
+    "source_run_commit": null,
+    "snapshot_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+    "protocol_commit": "b9f1d8548d3e75e3afe96a0e87491cfb132df4c1",
+    "source_run_commit_note": "Exact local source run commit was not recorded; compact snapshot values were first committed at 65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8.",
+    "source_artifact_available_in_git": false
+  },
   "source": {
     "script_or_notebook": "scripts/experiments/bert4rec_multimodal_train.py",
     "config": "reports/bert4rec_multimodal/bert4rec_qwen_concat_w16/run_config_test.json",
@@ -18,13 +25,18 @@
     "target_policy": "next held-out test item",
     "candidate_universe": "MovieLens-1M item_idx universe",
     "id_space": "original_item_idx",
-    "k_values": [1, 5, 10, 20]
+    "k_values": [
+      1,
+      5,
+      10,
+      20
+    ]
   },
   "model": {
-    "base_model": "BERT4Rec-style masked next-item Transformer",
+    "base_model": "BERT4Rec masked next-item Transformer",
     "adapter": null,
     "sid_protocol": null,
-    "notes": "Masked last-position next-item Transformer with item ID embedding plus projected Qwen3-4B concat content vector; history window 16."
+    "notes": "Masked last-position next-item Transformer with item ID embedding plus projected content vector; history window 16."
   },
   "metrics": {
     "recall@1": 0.08609271523178808,
@@ -47,6 +59,6 @@
     "large_artifacts_committed": false
   },
   "limitations": [
-    "Architecture is a compact local BERT4Rec-style next-item implementation, not canonical random-mask BERT4Rec pretraining and not a broad hyperparameter benchmark."
+    "Architecture is a compact local BERT4Rec next-item implementation, not canonical random-mask BERT4Rec pretraining and not a broad hyperparameter benchmark."
   ]
 }

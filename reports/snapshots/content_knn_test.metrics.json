@@ -1,10 +1,17 @@
 {
   "run_id": "content_knn_test",
-  "method": "Content KNN with Qwen content",
+  "method": "Content KNN",
   "method_family": "baseline",
   "split": "test",
   "dataset": "MovieLens-1M",
-  "git_commit": "3cde9ca",
+  "git_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+  "provenance": {
+    "source_run_commit": null,
+    "snapshot_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+    "protocol_commit": "b9f1d8548d3e75e3afe96a0e87491cfb132df4c1",
+    "source_run_commit_note": "Exact local source run commit was not recorded; compact snapshot values were first committed at 65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8.",
+    "source_artifact_available_in_git": false
+  },
   "source": {
     "script_or_notebook": "scripts/experiments/qwen4b_embedding_knn_sweep.py",
     "config": null,
@@ -18,7 +25,12 @@
     "target_policy": "next held-out test item",
     "candidate_universe": "MovieLens-1M item_idx universe",
     "id_space": "original_item_idx",
-    "k_values": [1, 5, 10, 20]
+    "k_values": [
+      1,
+      5,
+      10,
+      20
+    ]
   },
   "model": {
     "base_model": "Qwen/Qwen3-Embedding-4B",
@@ -50,6 +62,6 @@
     "large_artifacts_committed": false
   },
   "limitations": [
-    "This is a non-sequential content-control baseline over Qwen content vectors, not a collaborative recommender."
+    "This is a non-sequential content-control baseline over content vectors, not a collaborative recommender."
   ]
 }

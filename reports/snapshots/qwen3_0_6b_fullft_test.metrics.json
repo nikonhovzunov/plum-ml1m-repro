@@ -4,7 +4,14 @@
   "method_family": "plum_style_generative",
   "split": "test",
   "dataset": "MovieLens-1M",
-  "git_commit": null,
+  "git_commit": "186bf88cb3ad8143223dfa00ac2ce2e6aa424565",
+  "provenance": {
+    "source_run_commit": null,
+    "snapshot_commit": "186bf88cb3ad8143223dfa00ac2ce2e6aa424565",
+    "protocol_commit": "b9f1d8548d3e75e3afe96a0e87491cfb132df4c1",
+    "source_run_commit_note": "Exact local source run commit was not recorded; compact snapshot values were first committed at 186bf88cb3ad8143223dfa00ac2ce2e6aa424565.",
+    "source_artifact_available_in_git": false
+  },
   "source": {
     "script_or_notebook": "notebooks/sft/30_sft_qwen3_0_6b_fullft_cpt_fullft_sid_v2_trainval_test_w16_e7_allseen.ipynb",
     "config": null,
@@ -18,13 +25,35 @@
     "target_policy": "next held-out test item",
     "candidate_universe": "valid SID-v2 item trie mapped to MovieLens-1M item_idx",
     "id_space": "original_item_idx",
-    "k_values": [1, 5, 10]
+    "k_values": [
+      1,
+      5,
+      10
+    ]
+  },
+  "sid_protocol": {
+    "name": "SID-v2",
+    "n_levels": 4,
+    "codebook_sizes": [
+      512,
+      256,
+      128,
+      64
+    ],
+    "collision_policy": "expand"
   },
   "model": {
     "base_model": "Qwen3-0.6B",
     "adapter": "full-FT CPT + full-FT SFT",
     "sid_protocol": "SID-v2, 4 levels",
     "notes": "Trie-constrained Semantic ID generation; beam20 return20."
+  },
+  "adaptation": {
+    "type": "full_ft",
+    "cpt": "full_ft",
+    "sft": "full_ft",
+    "base_model": "Qwen3-0.6B",
+    "notes": "Controlled Qwen3-0.6B full fine-tuning run under SID-v2, window-16, trie-constrained decoding, and all-prior seen filtering."
   },
   "metrics": {
     "recall@1": 0.04437086092715232,

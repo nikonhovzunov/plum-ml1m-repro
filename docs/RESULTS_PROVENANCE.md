@@ -13,6 +13,12 @@ map for external review.
   `data/processed/` or `reports/<experiment>/`, the snapshot records that path
   but does not commit the source artifact.
 - Metrics must not be changed unless the corresponding evaluation is rerun.
+- Some compact snapshots were committed after the original local run. When the
+  exact local source run commit was not recorded, the snapshot uses
+  `source_run_commit: null` and documents this limitation explicitly in
+  `provenance.source_run_commit_note`.
+- Top-level `git_commit` and `provenance.snapshot_commit` refer to the compact
+  snapshot commit, not to the uncommitted local checkpoint or prediction dump.
 
 ## Package-Native Re-Scoring
 
@@ -50,10 +56,10 @@ Sequence-based methods use a history window of 16 items.
 | Snapshot | Method | SID codebooks | Source artifact | Source in git? | Notes |
 |---|---|---|---|---|---|
 | `popularity_test.metrics.json` | Global Popularity | n/a | `data/processed/artifacts/popularity_baseline_trainval_test_full_seen/metrics.json` | no | Global train+val item frequency baseline. |
-| `content_knn_test.metrics.json` | Content KNN with Qwen content | n/a | `reports/embedding_knn_qwen4b_v2/concat_meta_description_w16_all_seen/best.json` | no | Concatenated metadata + overview Qwen content vectors. |
+| `content_knn_test.metrics.json` | Content KNN | n/a | `reports/embedding_knn_qwen4b_v2/concat_meta_description_w16_all_seen/best.json` | no | Concatenated metadata + overview content vectors. |
 | `itemknn_test.metrics.json` | Behavioral ItemKNN | n/a | `reports/itemknn_behavior_v2/test_w16_all_seen_best_val_selected/best.json` | no | BM25-cosine interaction KNN. |
-| `bert4rec_style_multimodal_test.metrics.json` | BERT4Rec-style + Qwen content | n/a | `reports/bert4rec_multimodal/bert4rec_qwen_concat_w16/metrics_test.json` | no | Masked last-position next-item Transformer with item ID plus projected Qwen content vector. |
-| `sasrec_multimodal_test.metrics.json` | SASRec-style + Qwen content | n/a | `reports/sasrec_multimodal/sasrec_qwen_concat_w16/metrics_test.json` | no | Causal next-item Transformer with item ID plus projected Qwen content vector. |
+| `bert4rec_style_multimodal_test.metrics.json` | BERT4Rec | n/a | `reports/bert4rec_multimodal/bert4rec_qwen_concat_w16/metrics_test.json` | no | Masked last-position next-item Transformer with item ID plus projected content vector. |
+| `sasrec_multimodal_test.metrics.json` | SASRec | n/a | `reports/sasrec_multimodal/sasrec_qwen_concat_w16/metrics_test.json` | no | Causal next-item Transformer with item ID plus projected content vector. |
 | `qwen3_0_6b_fullft_test.metrics.json` | Qwen3-0.6B full-FT | `[512, 256, 128, 64]` | `data/processed/artifacts/sft_qwen3_0_6b_fullft_cpt_fullft_sid_v2_trainval_test_w16_e7_allseen_v1/final_test_metrics.json` | no | SID-v2 trie-constrained generative run; local source records @1/@5/@10 metrics. |
 | `qwen3_0_6b_qlora32_test.metrics.json` | Qwen3-0.6B QLoRA32 | `[512, 256, 128, 64]` | `data/processed/artifacts/sft_qwen3_0_6b_qlora32_sid_v2_trainval_test_w16_e1_allseen_v1/test_full_beam20_return20_all_seen_20260519_001408/beam_sweep_results.json` | no | SID-v2 trie-constrained generative run. |
 | `qwen3_lora16_test.metrics.json` | Qwen3-4B LoRA16 | `[512, 256, 128, 64]` | `data/processed/artifacts/sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch_v1/test_full_beam20_return20_strict_full_seen_b5/beam_sweep_results.json` | no | SID-v2 trie-constrained generative run. |

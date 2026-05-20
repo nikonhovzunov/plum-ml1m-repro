@@ -25,14 +25,20 @@ stage and test-time context source.
 | Run | SID codebooks | Users | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 | Key settings |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | Global Popularity | n/a | 6040 | 0.0056 | 0.0202 | 0.0363 | 0.0178 | 0.0123 | 199 | global item frequency from train+val |
-| Content KNN with Qwen content | n/a | 6040 | 0.0169 | 0.0414 | 0.0675 | 0.0374 | 0.0284 | 1170 | metadata+overview concat vectors; w16; recency alpha=0.8; rating=none; sum |
+| Content KNN | n/a | 6040 | 0.0169 | 0.0414 | 0.0675 | 0.0374 | 0.0284 | 1170 | metadata+overview concat vectors; w16; recency alpha=0.8; rating=none; sum |
 | Behavioral ItemKNN BM25-cosine | n/a | 6040 | 0.0427 | 0.1268 | 0.1907 | 0.1056 | 0.0798 | 1788 | w16; alpha=0.8; rating=none; top3 aggregation |
 | Qwen3-0.6B full-FT | `[512, 256, 128, 64]` | 6040 | 0.0444 | 0.1437 | 0.2061 | 0.1156 | 0.0878 | 1364 | full-FT CPT + full-FT SFT + SID-v2; w16; all-history filtering |
 | Qwen3-0.6B QLoRA32 | `[512, 256, 128, 64]` | 6040 | 0.0613 | 0.1662 | 0.2434 | 0.1395 | 0.1079 | 1776 | CPT-QLoRA32 + SFT-QLoRA32 + SID-v2; w16; all-history filtering |
 | Qwen3-4B LoRA16 | `[512, 256, 128, 64]` | 6040 | 0.0626 | 0.1765 | 0.2525 | 0.1451 | 0.1123 | 2108 | CPT-LoRA + SFT-LoRA + SID-v2; w16; all-history filtering |
 | Qwen3-4B QLoRA32 | `[512, 256, 128, 64]` | 6040 | 0.0619 | 0.1755 | 0.2550 | 0.1450 | 0.1116 | 2143 | CPT-QLoRA32 + SFT-QLoRA32 + SID-v2; w16; 3 epochs |
-| BERT4Rec-style + Qwen content | n/a | 6040 | 0.0861 | 0.2166 | 0.3066 | 0.1823 | 0.1443 | 2842 | masked last-position next-item Transformer; item ID + projected Qwen3-4B concat content; w16; 25 epochs |
-| SASRec-style + Qwen content | n/a | 6040 | 0.0844 | 0.2250 | 0.3104 | 0.1835 | 0.1446 | 2455 | causal next-item Transformer; item ID + projected Qwen3-4B concat content; w16; 3 epochs |
+| BERT4Rec | n/a | 6040 | 0.0861 | 0.2166 | 0.3066 | 0.1823 | 0.1443 | 2842 | masked last-position next-item Transformer; item ID + projected content vector; w16; 25 epochs |
+| SASRec | n/a | 6040 | 0.0844 | 0.2250 | 0.3104 | 0.1835 | 0.1446 | 2455 | causal next-item Transformer; item ID + projected content vector; w16; 3 epochs |
+
+The BERT4Rec and SASRec rows are adapted multimodal sequential
+baselines that use item IDs together with projected content vectors. They
+are not claimed to be exact canonical reproductions of the original papers. The
+PLUM-style Qwen rows are competitive here, but they do not beat the strongest
+SASRec/BERT4Rec baselines in the current held-out test table.
 
 ## SID Depth Ablation
 
@@ -49,16 +55,16 @@ reported only as a depth ablation.
 
 ## Baseline and Ablation Scope
 
-| Method | Canonical? | Uses Qwen content? | SID codebooks | Split | Seen filtering | Notes |
+| Method | Canonical? | Uses content vectors? | SID codebooks | Split | Seen filtering | Notes |
 |---|---:|---:|---|---|---|---|
 | Global Popularity | yes | no | n/a | test | all prior | Global train+val item frequency. |
-| Content KNN with Qwen content | adapted control | yes | n/a | test | all prior | Non-sequential content similarity over concatenated metadata and overview embeddings. |
+| Content KNN | adapted control | yes | n/a | test | all prior | Non-sequential content similarity over concatenated metadata and overview embeddings. |
 | Behavioral ItemKNN BM25-cosine | adapted control | no | n/a | test | all prior | Collaborative item-item similarity over MovieLens interactions. |
-| SASRec-style + Qwen content | adapted | yes | n/a | test | all prior | Local causal Transformer with item IDs plus projected content vectors. |
-| BERT4Rec-style + Qwen content | adapted | yes | n/a | test | all prior | Masked last-position next-item Transformer, not canonical random-mask BERT4Rec pretraining. |
+| SASRec | adapted | yes | n/a | test | all prior | Local causal Transformer with item IDs plus projected content vectors. |
+| BERT4Rec | adapted | yes | n/a | test | all prior | Masked last-position next-item Transformer, not canonical random-mask BERT4Rec pretraining. |
 | Qwen3 SID-v2 | adapted PLUM-style | yes via SID/metadata | `[512, 256, 128, 64]` | test | all prior | Generative SID retrieval with trie-constrained decoding. |
 
-ID-only SASRec is a planned baseline to isolate the effect of Qwen content
+ID-only SASRec is a planned baseline to isolate the effect of content
 features. It is not reported here because it has not been run under the same
 protocol yet.
 

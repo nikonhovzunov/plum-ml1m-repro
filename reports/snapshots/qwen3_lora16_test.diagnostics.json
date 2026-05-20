@@ -1,29 +1,13 @@
 {
   "run_id": "qwen3_lora16_test",
   "split": "test",
-  "decoding": {
-    "trie_constrained": true,
-    "beam_size": 20,
-    "num_return_sequences": 20,
-    "max_new_tokens": null
-  },
-  "sid_diagnostics": {
-    "invalid_sid_rate": 0,
-    "valid_sid_rate": 1.0,
-    "sid_collision_rate": null,
-    "unique_sid_ratio": null
-  },
-  "generation_diagnostics": {
-    "duplicate_prediction_rate": 0,
-    "seen_generated_rate": 0.22369205298013245,
-    "avg_raw_valid_candidates": 20,
-    "avg_unique_filtered_candidates": 15.526158940397352,
-    "avg_predictions_before_filtering": null,
-    "avg_predictions_after_filtering": null
-  },
-  "coverage": {
-    "coverage@10": 2108,
-    "coverage@10_percent": null
+  "git_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+  "provenance": {
+    "source_run_commit": null,
+    "snapshot_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+    "protocol_commit": "b9f1d8548d3e75e3afe96a0e87491cfb132df4c1",
+    "source_run_commit_note": "Exact local source run commit was not recorded; compact snapshot values were first committed at 65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8.",
+    "source_artifact_available_in_git": false
   },
   "source": {
     "available_fields": [
@@ -64,6 +48,41 @@
       "split"
     ],
     "input_path": "data/processed/artifacts/sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch_v1/test_full_beam20_return20_strict_full_seen_b5/beam_sweep_results.json"
+  },
+  "sid_protocol": {
+    "name": "SID-v2",
+    "n_levels": 4,
+    "codebook_sizes": [
+      512,
+      256,
+      128,
+      64
+    ],
+    "collision_policy": "expand"
+  },
+  "decoding": {
+    "trie_constrained": true,
+    "beam_size": 20,
+    "num_return_sequences": 20,
+    "max_new_tokens": null
+  },
+  "sid_diagnostics": {
+    "invalid_sid_rate": 0,
+    "valid_sid_rate": 1.0,
+    "sid_collision_rate": null,
+    "unique_sid_ratio": null
+  },
+  "generation_diagnostics": {
+    "duplicate_prediction_rate": 0,
+    "seen_generated_rate": 0.22369205298013245,
+    "avg_raw_valid_candidates": 20,
+    "avg_unique_filtered_candidates": 15.526158940397352,
+    "avg_predictions_before_filtering": null,
+    "avg_predictions_after_filtering": null
+  },
+  "coverage": {
+    "coverage@10": 2108,
+    "coverage@10_percent": null
   },
   "artifact_policy": {
     "large_artifacts_committed": false,

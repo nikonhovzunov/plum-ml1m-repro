@@ -86,7 +86,9 @@ Train+val to held-out test:
 
 ![Held-out test Recall@10 comparison](docs/assets/heldout_test_recall10_qwen3_06b_comparison.png)
 
-Protocol: MovieLens-1M chronological split, train+val context where applicable, all-prior-user-history seen filtering. Sequence models use history window 16. Content KNN ranks concatenated metadata + overview vectors. ItemKNN uses interactions only. BERT4Rec and SASRec use item IDs plus projected content vectors. Qwen runs use SID-v2 trie-constrained decoding.
+Protocol: MovieLens-1M chronological split, train+val context where applicable, all-prior-user-history seen filtering. Sequence models use history window 16. Content KNN ranks concatenated metadata + overview vectors. ItemKNN uses interactions only. The BERT4Rec and SASRec rows use item IDs plus projected content vectors. Qwen runs use SID-v2 trie-constrained decoding.
+
+The PLUM-style Qwen rows are competitive in this setup, but they do not exceed the strongest SASRec and BERT4Rec rows on MovieLens-1M held-out test metrics.
 
 | Protocol | Fit / context source | SID codebooks | Seen filtering | Test users | Recall@1 | Recall@5 | Recall@10 | NDCG@10 | MRR@10 | Coverage@10 |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
@@ -206,3 +208,7 @@ GitHub Actions runs only lightweight checks:
 - smoke test.
 
 CI does not run heavy training and does not download large models.
+
+## License
+
+MIT License. See [LICENSE](LICENSE).

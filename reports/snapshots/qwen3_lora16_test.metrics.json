@@ -4,7 +4,14 @@
   "method_family": "plum_style_generative",
   "split": "test",
   "dataset": "MovieLens-1M",
-  "git_commit": "3cde9ca",
+  "git_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+  "provenance": {
+    "source_run_commit": null,
+    "snapshot_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+    "protocol_commit": "b9f1d8548d3e75e3afe96a0e87491cfb132df4c1",
+    "source_run_commit_note": "Exact local source run commit was not recorded; compact snapshot values were first committed at 65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8.",
+    "source_artifact_available_in_git": false
+  },
   "source": {
     "script_or_notebook": "notebooks/sft/11_sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch.ipynb",
     "config": "data/processed/artifacts/sft_qwen3_4b_sid_v2_trainval_test_w16_bestepoch_v1/config.json",
@@ -18,13 +25,36 @@
     "target_policy": "next held-out test item",
     "candidate_universe": "valid SID-v2 item trie mapped to MovieLens-1M item_idx",
     "id_space": "original_item_idx",
-    "k_values": [1, 5, 10, 20]
+    "k_values": [
+      1,
+      5,
+      10,
+      20
+    ]
+  },
+  "sid_protocol": {
+    "name": "SID-v2",
+    "n_levels": 4,
+    "codebook_sizes": [
+      512,
+      256,
+      128,
+      64
+    ],
+    "collision_policy": "expand"
   },
   "model": {
     "base_model": "Qwen3-4B",
     "adapter": "CPT-LoRA16 + SFT-LoRA16",
     "sid_protocol": "SID-v2",
     "notes": "Trie-constrained Semantic ID generation; beam20 return20."
+  },
+  "adaptation": {
+    "type": "LoRA16",
+    "cpt": "LoRA",
+    "sft": "LoRA",
+    "base_model": "Qwen3-4B",
+    "notes": "Qwen3-4B LoRA16 generative SID run."
   },
   "metrics": {
     "recall@1": 0.06258278145695365,

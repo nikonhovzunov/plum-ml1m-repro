@@ -1,10 +1,17 @@
 {
   "run_id": "sasrec_multimodal_test",
-  "method": "SASRec-style + Qwen content",
+  "method": "SASRec",
   "method_family": "neural_sequential_baseline",
   "split": "test",
   "dataset": "MovieLens-1M",
-  "git_commit": "3cde9ca",
+  "git_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+  "provenance": {
+    "source_run_commit": null,
+    "snapshot_commit": "65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8",
+    "protocol_commit": "b9f1d8548d3e75e3afe96a0e87491cfb132df4c1",
+    "source_run_commit_note": "Exact local source run commit was not recorded; compact snapshot values were first committed at 65ffa9eb9e35389f3078e3c873e65bb7d57f5cd8.",
+    "source_artifact_available_in_git": false
+  },
   "source": {
     "script_or_notebook": "scripts/experiments/sasrec_multimodal_train.py",
     "config": "reports/sasrec_multimodal/sasrec_qwen_concat_w16/run_config_test.json",
@@ -18,13 +25,18 @@
     "target_policy": "next held-out test item",
     "candidate_universe": "MovieLens-1M item_idx universe",
     "id_space": "original_item_idx",
-    "k_values": [1, 5, 10, 20]
+    "k_values": [
+      1,
+      5,
+      10,
+      20
+    ]
   },
   "model": {
-    "base_model": "SASRec-style causal next-item Transformer",
+    "base_model": "SASRec causal next-item Transformer",
     "adapter": null,
     "sid_protocol": null,
-    "notes": "Causal next-item Transformer with item ID embedding plus projected Qwen3-4B concat content vector; history window 16."
+    "notes": "Causal next-item Transformer with item ID embedding plus projected content vector; history window 16."
   },
   "metrics": {
     "recall@1": 0.08443708609271523,
@@ -47,6 +59,6 @@
     "large_artifacts_committed": false
   },
   "limitations": [
-    "Architecture is a compact local SASRec-style implementation with Qwen content features, not an ID-only SASRec comparison and not a broad hyperparameter benchmark."
+    "Architecture is a compact local SASRec implementation with projected content features, not an ID-only SASRec comparison and not a broad hyperparameter benchmark."
   ]
 }

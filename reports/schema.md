@@ -4,7 +4,7 @@ Each committed metric snapshot is a compact JSON file. It records scalar
 metrics and provenance only; it must not include predictions, model weights, or
 large generated artifacts.
 
-Required top-level fields:
+Common top-level shape:
 
 ```json
 {
@@ -14,6 +14,13 @@ Required top-level fields:
   "split": "validation|test",
   "dataset": "MovieLens-1M",
   "git_commit": "...",
+  "provenance": {
+    "source_run_commit": null,
+    "snapshot_commit": "...",
+    "protocol_commit": "...",
+    "source_run_commit_note": "...",
+    "source_artifact_available_in_git": false
+  },
   "source": {
     "script_or_notebook": "...",
     "config": "...",
@@ -29,10 +36,23 @@ Required top-level fields:
     "id_space": "original_item_idx",
     "k_values": [1, 5, 10, 20]
   },
+  "sid_protocol": {
+    "name": "SID-v2",
+    "n_levels": 4,
+    "codebook_sizes": [512, 256, 128, 64],
+    "collision_policy": "expand"
+  },
   "model": {
     "base_model": "...",
     "adapter": "...",
     "sid_protocol": "...",
+    "notes": "..."
+  },
+  "adaptation": {
+    "type": "QLoRA32|LoRA16|full_ft|...",
+    "cpt": "QLoRA|LoRA|full_ft|none|unknown",
+    "sft": "QLoRA|LoRA|full_ft|unknown",
+    "base_model": "...",
     "notes": "..."
   },
   "metrics": {
@@ -58,11 +78,65 @@ Rules:
 
 - Metrics must be numeric or `null`.
 - `split` must be either `validation` or `test`.
+- Top-level `git_commit` is the compact snapshot commit, not necessarily the
+  local source run commit.
+- `provenance.source_run_commit` may be `null` when the exact local run commit
+  was not recorded. In that case `source_run_commit_note` must explain the
+  limitation explicitly.
+- `provenance.snapshot_commit` identifies the commit where the compact snapshot
+  values were first committed.
+- `provenance.protocol_commit` identifies the repository protocol/docs revision
+  used when the provenance metadata was normalized.
 - `source_available_in_git` refers to the original metric artifact, not to this
   compact snapshot.
+- `source_artifact_available_in_git` repeats that policy inside the provenance
+  block for quick audit checks.
+- `sid_protocol` is required for Qwen/SID snapshots. The active SID-v2 rows use
+  four levels with `[512, 256, 128, 64]`; SID-depth ablation rows must state
+  their ablation codebooks explicitly.
+- `adaptation` is required for PEFT/full-FT Qwen snapshots, with separate CPT and
+  SFT adaptation types. Missing source details must be written as `unknown`,
+  not guessed.
 - If a metric was copied from documentation rather than from a committed source
   artifact, the snapshot must say so in `source.note`.
 - Large artifacts must never be marked as committed.
+- Compact snapshots do not imply that checkpoints, prediction dumps, embeddings,
+  adapters, or processed datasets are committed.
+
+## Summary CSV Schema
+
+`summary_test.csv` and `summary_validation.csv` are compact indices over the
+JSON metric snapshots. They are intended for quick table rendering only; the
+corresponding `*.metrics.json` files remain the canonical scalar metric records.
+
+Required columns:
+
+```text
+run_id
+method
+method_family
+split
+sid_codebooks
+recall@1
+recall@5
+recall@10
+recall@20
+ndcg@10
+mrr@10
+coverage@10
+seen_filter_scope
+context_source
+notes
+```
+
+Rules:
+
+- Each `run_id` must resolve to `reports/snapshots/{run_id}.metrics.json`.
+- Numeric metric cells must match the corresponding JSON `metrics` values.
+- Empty metric cells are allowed only when the JSON metric value is `null`.
+- Test summaries must contain only `split=test`; validation summaries must
+  contain only `split=validation`.
+- Summary rows may shorten prose notes, but must not change scalar metrics.
 
 ## Generative Diagnostic Snapshot Schema
 
@@ -74,6 +148,20 @@ remain outside git.
 {
   "run_id": "...",
   "split": "validation|test",
+  "git_commit": "...",
+  "provenance": {
+    "source_run_commit": null,
+    "snapshot_commit": "...",
+    "protocol_commit": "...",
+    "source_run_commit_note": "...",
+    "source_artifact_available_in_git": false
+  },
+  "sid_protocol": {
+    "name": "SID-v2",
+    "n_levels": 4,
+    "codebook_sizes": [512, 256, 128, 64],
+    "collision_policy": "expand"
+  },
   "decoding": {
     "trie_constrained": true,
     "beam_size": 30,
